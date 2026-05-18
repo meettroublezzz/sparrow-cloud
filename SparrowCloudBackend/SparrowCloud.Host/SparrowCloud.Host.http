@@ -1,0 +1,6 @@
+@SparrowCloud.Host_HostAddress = http://localhost:5064
+
+GET {{SparrowCloud.Host_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

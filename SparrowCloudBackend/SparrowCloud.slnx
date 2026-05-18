@@ -1,0 +1,7 @@
+<Solution>
+  <Project Path="SparrowCloud.Contracts/SparrowCloud.Contracts.csproj" Id="394817ec-021b-479b-bf7b-38136c8eeb5a" />
+  <Project Path="SparrowCloud.Host/SparrowCloud.Host.csproj" />
+  <Project Path="SparrowCloud.Models/SparrowCloud.Models.csproj" Id="bf94adc7-0eb9-42f2-aba8-e125c31c5fd5" />
+  <Project Path="SparrowCloud.Services/SparrowCloud.Services.csproj" Id="2ed88282-7d33-448f-aba6-a6d4865fa30d" />
+  <Project Path="SparrowCloud.Utils/SparrowCloud.Utils.csproj" Id="94f6cee4-1249-4c4d-baa3-fb0a05457d05" />
+</Solution>
