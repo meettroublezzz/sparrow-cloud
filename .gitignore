@@ -1,0 +1,17 @@
+# IDE 配置
+.vs/
+.vscode/
+
+# .NET 编译输出（所有子项目通用）
+bin/
+obj/
+
+# 辅助文件
+packages/
+*.user
+*.suo
+*.pdb
+
+# Windows
+Thumbs.db
+Desktop.ini
