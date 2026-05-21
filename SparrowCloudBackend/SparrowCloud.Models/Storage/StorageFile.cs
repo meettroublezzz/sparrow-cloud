@@ -49,7 +49,6 @@ namespace SparrowCloud.Models.Storage
         /// <summary>
         /// 文件/文件夹 原始名称（带后缀）
         /// </summary>
-        [Required]
         [MaxLength(255)]
         public required string Name { get; set; }
 
@@ -57,8 +56,7 @@ namespace SparrowCloud.Models.Storage
         /// 文件/文件夹 扩展名称（仅后缀，不含.）
         /// null = 无后缀
         /// </summary>
-        [Required]
-        [MaxLength(31)]
+        [MaxLength(63)]
         public string? Extension { get; set; }
 
         /// <summary>

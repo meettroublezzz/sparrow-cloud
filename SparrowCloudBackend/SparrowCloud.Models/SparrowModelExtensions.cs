@@ -28,9 +28,11 @@ namespace SparrowCloud.Models
             services.AddDbContext<IntermediateContext>(options =>
             {
                 // 读取连接字符串
-                string conn = configuration.GetConnectionString("IntermediateContext")!;
+                string path = configuration["SparrowConfigs:MainPath"]!;
+                // 数据库文件路径
+                path = Path.Combine(path, @"IntermSqlite.db");
 
-                options.UseSqlite(conn);
+                options.UseSqlite($"Data Source={path}; Cache=Shared;");
             });
 
             return services;

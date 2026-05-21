@@ -264,7 +264,7 @@ namespace SparrowCloud.Services.Storage
 
             StorageMetadata metadata = new()
             {
-                Version = Version.Parse(_configuration["SparrowVersion"]!),
+                Version = Version.Parse(_configuration["SparrowConfigs:AppVersion"]!),
 
                 StorageGuid = EntityBase.GenerateGuid(),
 
