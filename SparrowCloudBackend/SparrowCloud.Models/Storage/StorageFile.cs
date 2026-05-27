@@ -90,12 +90,13 @@ namespace SparrowCloud.Models.Storage
         /// 非映射属性，用于得到文件 创建时间（仅显示用）
         /// </summary>
         [NotMapped]
-        public DateTime CreationTimeUtc { get => new DateTime(CreationTimeTicks, DateTimeKind.Utc); }
+        public DateTime CreationTime { get => new DateTime(CreationTimeTicks, DateTimeKind.Utc).ToLocalTime(); }
 
         /// <summary>
         /// 文件最后修改时间（UTC时间的Ticks）
         /// 这是判断文件是否被修改的**唯一可靠依据**
         /// 所有文件系统都会在文件内容修改时更新此时间
+        /// PS：对于云盘如果写文件后，需要根据文件系统的最后修改时间，更新这个值，保持一致性
         /// </summary>
         public long LastWriteTimeTicks { get; set; }
 
@@ -103,14 +104,11 @@ namespace SparrowCloud.Models.Storage
         /// 非映射属性，用于得到文件 最后修改时间（仅显示用）
         /// </summary>
         [NotMapped]
-        public DateTime LastWriteTimeUtc { get => new DateTime(LastWriteTimeTicks, DateTimeKind.Utc); }
+        public DateTime LastWriteTime { get => new DateTime(LastWriteTimeTicks, DateTimeKind.Utc).ToLocalTime(); }
 
         /// <summary>
-        /// 文件最后访问时间（UTC时间的Ticks）
-        /// ⚠️ 重要警告：此时间戳极不可靠！
-        /// - Windows默认禁用访问时间更新（性能优化）
-        /// - Linux/macOS也可能通过mount选项禁用
-        /// - 仅用于参考，绝对不能用于判断文件是否被修改
+        /// 首次的值依赖文件系统，后续云盘自己维护
+        /// PS：常用于浏览最近文件项
         /// </summary>
         public long LastAccessTimeTicks { get; set; }
 
@@ -118,7 +116,7 @@ namespace SparrowCloud.Models.Storage
         /// 非映射属性，用于得到文件 最后修改时间（仅显示用）
         /// </summary>
         [NotMapped]
-        public DateTime LastAccessTimeUtc { get => new DateTime(LastAccessTimeTicks, DateTimeKind.Utc); }
+        public DateTime LastAccessTime { get => new DateTime(LastAccessTimeTicks, DateTimeKind.Utc).ToLocalTime(); }
         #endregion
 
         /// <summary>
@@ -145,7 +143,7 @@ namespace SparrowCloud.Models.Storage
 		/// <summary>
 		/// 关联的文件
 		/// </summary>
-		public StorageFileThumbnail? Thumbnail { get; set; }
+		public virtual StorageFileThumbnail? Thumbnail { get; set; }
     }
 
     public class StorageFilesConfig : IEntityTypeConfiguration<StorageFile>
@@ -178,6 +176,7 @@ namespace SparrowCloud.Models.Storage
                 e.FileShaHash,
             });
 
+            builder.HasIndex(e => e.LastAccessTimeTicks);
             builder.HasIndex(e => e.DeletedAt);
             builder.HasIndex(e => e.Missing);
         }
