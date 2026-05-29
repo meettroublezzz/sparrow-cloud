@@ -16,6 +16,7 @@ namespace SparrowCloud.Services.Storage
 {
     public class StorageManager
     {
+        #region 相关约定名称
         /// <summary>
         /// 数据仓库名称
         /// </summary>
@@ -30,8 +31,7 @@ namespace SparrowCloud.Services.Storage
         /// 麻雀云盘数据目录（区分小程序）
         /// </summary>
         public const string SparrowCloudName = @"__SparrowCloud__";
-
-
+        #endregion
 
         private readonly ILogger<StorageManager> _logger;
 
@@ -45,99 +45,71 @@ namespace SparrowCloud.Services.Storage
             _configuration = configuration;
 
             _db = db;
-
-            if (_storages == null)
-            {
-                Init(db);
-            }
         }
 
         /// <summary>
-        /// 文件库合集 key:文件库唯一标识; val:文件库服务;（所有用户的）
+        /// 所有用户的文件库合集：key: $"{uid}+{sid}"， value: 文件库服务对象；
         /// </summary>
-        private static ConcurrentDictionary<string, StorageService>? _storages = null;
-        /// <summary>
-        /// 读写锁（仅初始化时使用）
-        /// </summary>
-        private static readonly ReaderWriterLockSlim _lock = new();
+        private static readonly ConcurrentDictionary<string, StorageService> _storages = new();
 
         /// <summary>
         /// 初始化文件库管理器
         /// </summary>
-        private static void Init(IntermediateContext db)
+        public static async Task InitAsync(IntermediateContext db)
         {
             /*
              * 从数据库读取当前所有挂载的文件库，初始化管理器；
              */
 
-            // 获取写锁
-            _lock.EnterWriteLock();
-            try
-            {
-                // 再次判断是否要初始化
-                if (_storages != null)
-                    // 已经被初始化过了
-                    return;
-
-                // 实例化
-                _storages = new();
-
-                var dataset = db.IntermStorages
+            var dataset = db.IntermStorages
                     .Where(e => e.Missing == null && e.Damaged == null)
                     .ToArray();
 
-                foreach ( var item in dataset )
+            foreach (var item in dataset)
+            {
+                string rootPath = Path.TrimEndingDirectorySeparator(item.RootPath);
+
+                string basePath = Path.Combine(rootPath, StandaloneDirectoryName);
+
+                string metadataPath = Path.Combine(basePath, MetadataFileName);
+
+                #region 检测文件库状态
+                // 如果文件库目录丢了
+                if (!Directory.Exists(rootPath))
                 {
-                    string rootPath = Path.TrimEndingDirectorySeparator(item.RootPath);
+                    // 文件库的目录找不到了，缺失
+                    item.Missing = DateTime.Now;
 
-                    string basePath = Path.Combine(rootPath, StandaloneDirectoryName);
-
-                    string metadataPath = Path.Combine(basePath, MetadataFileName);
-
-                    #region 检测文件库状态
-                    Console.WriteLine(rootPath);
-                    Console.WriteLine(basePath);
-                    Console.WriteLine(metadataPath);
-
-                    if (!Directory.Exists(rootPath))
-                    {
-                        // 文件库的目录找不到了，缺失
-                        item.Missing = DateTime.Now;
-
-                        continue;
-                    }
-
-                    if (!Directory.Exists(basePath))
-                    {
-                        item.Damaged = $"{DateTime.Now}：此文件库损坏`{basePath}`无法找到数据仓库，请检查该文件库！";
-
-                        continue;
-                    }
-
-                    if (!File.Exists(metadataPath))
-                    {
-                        item.Damaged = $"{DateTime.Now}：此文件库损坏`{metadataPath}`内部元数据丢失，无法识别文件库！";
-
-                        continue;
-                    }
-                    #endregion
-
-                    // 读取元数据
-                    var metadata = JsonConvert.DeserializeObject<StorageMetadata>(File.ReadAllText(metadataPath))!;
-
-                    // 实例化文件库
-                    StorageService storage = new(rootPath, metadata);
-
-                    _storages.TryAdd(metadata.StorageGuid, storage);
+                    continue;
                 }
 
-                db.SaveChanges();
+                // 如果数据仓库丢了
+                if (!Directory.Exists(basePath))
+                {
+                    item.Damaged = $"{DateTime.Now}：此文件库损坏`{basePath}`无法找到数据仓库，请检查该文件库！";
+
+                    continue;
+                }
+
+                // 如果元数据丢了
+                if (!File.Exists(metadataPath))
+                {
+                    item.Damaged = $"{DateTime.Now}：此文件库损坏`{metadataPath}`内部元数据丢失，无法识别文件库！";
+
+                    continue;
+                }
+                #endregion
+
+                // 读取元数据
+                var metadata = JsonConvert.DeserializeObject<StorageMetadata>(File.ReadAllText(metadataPath))!;
+
+                // 实例化文件库
+                StorageService storage = new(rootPath, metadata);
+
+                _storages.TryAdd($"{item.UserId}+{metadata.StorageGuid}", storage);
             }
-            finally
-            {
-                // 释放写锁
-                _lock.ExitWriteLock();
-            }
+
+            db.SaveChanges();
         }
 
         /// <summary>
@@ -146,19 +118,21 @@ namespace SparrowCloud.Services.Storage
         /// <returns></returns>
         public async Task<IEnumerable<dynamic>> QueryStorageAsync(string uid)
         {
-            string[] guids = _storages!.Keys.ToArray();
+            string[] storageIdArray = _storages.Keys
+                .Where(e => e.StartsWith($"{uid}"))
+                .Select(e => e.Split('+')[1])
+                .ToArray();
 
             return await _db.IntermStorages
                 .Where(e => e.UserId == uid)
                 .OrderBy(e => e.Sequence)
                 .Select(e => new
                 {
-                    e.Id,
+                    Id = e.StorageId,
                     e.Name,
 
-                    ready = guids.Contains(e.StorageId),
+                    ready = storageIdArray.Contains(e.StorageId),
 
-                    e.StorageId,
                     e.RootPath,
                     e.CreateAt,
                     e.Missing,
@@ -247,7 +221,7 @@ namespace SparrowCloud.Services.Storage
             // 实例化文件库
             StorageService storage = new(rootPath, metadata);
 
-            _storages!.TryAdd(metadata.StorageGuid, storage);
+            _storages.TryAdd($"{uid}+{metadata.StorageGuid}", storage);
 
             return model.Id;
         }
@@ -317,7 +291,7 @@ namespace SparrowCloud.Services.Storage
             
             await _db.SaveChangesAsync();
 
-            _storages!.Remove(record.StorageId, out _);
+            _storages.Remove($"{uid}+{record.StorageId}", out _);
         }
     
         /// <summary>
@@ -325,9 +299,34 @@ namespace SparrowCloud.Services.Storage
         /// </summary>
         /// <param name="storageId"></param>
         /// <returns></returns>
-        public StorageService GetStorageService(string storageId)
+        public static StorageService GetStorageService(string uid, string storageId)
         {
-            return _storages![storageId];
+            var ok = _storages.TryGetValue($"{uid}+{storageId}", out var storage);
+
+            if (!ok)
+            {
+                throw new ServiceException("此文件库ID不存在");
+            }
+
+            return storage!;
+        }
+
+        /// <summary>
+        /// 扫描遍历文件库（幂等）
+        /// </summary>
+        /// <returns></returns>
+        public async Task ScanFilesAsync(string uid, string storageId)
+        {
+            var storage = GetStorageService(uid, storageId);
+
+            await storage.ScanFilesAsync();
+
+            // 记录扫描时间
+            await _db.IntermStorages
+                        .Where(e => e.UserId == uid && e.StorageId == storageId)
+                        .ExecuteUpdateAsync(e => e
+                            .SetProperty(s => s.LastScan, DateTime.Now)
+                        );
         }
     }
 }

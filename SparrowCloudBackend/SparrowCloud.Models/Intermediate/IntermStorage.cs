@@ -76,6 +76,7 @@ namespace SparrowCloud.Models.Intermediate
                 e.StorageId,
             }).IsUnique();
 
+            builder.HasIndex(e => e.UserId);
             builder.HasIndex(e => e.StorageId);
             builder.HasIndex(e => e.Sequence);
         }

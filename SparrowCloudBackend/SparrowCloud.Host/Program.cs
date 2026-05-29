@@ -1,12 +1,15 @@
+using Microsoft.EntityFrameworkCore;
 using SparrowCloud.Host.Middlewares;
 using SparrowCloud.Models;
+using SparrowCloud.Models.Intermediate;
 using SparrowCloud.Services;
+using SparrowCloud.Services.Storage;
 
 namespace SparrowCloud.Host
 {
     public class Program
     {
-        public static void Main(string[] args)
+        public static async Task Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
 
@@ -37,6 +40,9 @@ namespace SparrowCloud.Host
 
             var app = builder.Build();
 
+            // 初始化工作
+            await InitAsync(app);
+
             // Configure the HTTP request pipeline.
 
             app.UseMiddleware<HttpMethodOverrideMiddleware>();
@@ -47,8 +53,6 @@ namespace SparrowCloud.Host
                 app.UseSwaggerUI();
             }
 
-            app.Services.InitSparrowModels();
-
             app.UseHttpsRedirection();
 
             app.UseAuthorization();
@@ -56,6 +60,35 @@ namespace SparrowCloud.Host
             app.MapControllers();
 
             app.Run();
+        }
+
+        /// <summary>
+        /// 进行初始化工作
+        /// </summary>
+        /// <param name="app"></param>
+        /// <returns></returns>
+        private static async Task InitAsync(WebApplication app)
+        {
+            using var scope = app.Services.CreateScope();
+
+            var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
+
+            try
+            {
+                // 初始化数据库层的上下文
+                app.Services.InitSparrowModels();
+
+                var intermediateContext = scope.ServiceProvider.GetRequiredService<IntermediateContext>();
+
+                // 初始化 文件库管理器
+                await StorageManager.InitAsync(intermediateContext);
+            }
+            catch (Exception ex)
+            {
+                logger.LogError($"Program.InitAsync 初始化工作失败：\n{ex}");
+
+                throw;
+            }
         }
     }
 }

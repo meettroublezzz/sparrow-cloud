@@ -55,9 +55,7 @@ namespace SparrowCloud.Host.Controllers
         [HttpPost("task/scan-files")]
         public async Task ScanFilesAsync([FromForm] string storageId)
         {
-            var storage = _manager.GetStorageService(storageId);
-
-            await storage.ScanFilesAsync();
+            await _manager.ScanFilesAsync(UserId, storageId);
         }
     }
 }

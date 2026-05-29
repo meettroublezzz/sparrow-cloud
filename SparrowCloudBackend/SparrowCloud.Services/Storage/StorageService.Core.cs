@@ -89,8 +89,6 @@ namespace SparrowCloud.Services.Storage
              */
 
             stopwatch.Restart();
-            // 确保文件夹存在
-            Directory.CreateDirectory(_workPath);
             // 获取数据库上下文
             using StorageContext db = GetStorageContext();
             // 自动建库建表
