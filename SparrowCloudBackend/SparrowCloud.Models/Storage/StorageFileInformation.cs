@@ -19,8 +19,9 @@ namespace SparrowCloud.Models.Storage
     {
         Source = 0, // 源头（文件最初是怎么来的）
         Link = 1, // 链接（各种链接，相关参考文章等）
-        Torrent = 2, // 种子文件
-        Magnet = 3, // 磁力链
+        Torrent = 2, // 种子文件（文件下载源）
+        Magnet = 3, // 磁力链（文件下载源）
+        Mmhtml = 4, // 单个离线网页文件（常用于使用教程）
     }
 
     /// <summary>
@@ -49,12 +50,14 @@ namespace SparrowCloud.Models.Storage
 
         /// <summary>
         /// 参考文本信息（文字、链接、磁力链等）
+        /// 普通文本，前端悬停时展示
         /// </summary>
         [MemoryPackOrder(3)]
         public string? Text { get; set; }
 
         /// <summary>
         /// 无法用文本表达的信息（如种子文件等）
+        /// 根据 ReferenceType 给具体解析器处理
         /// </summary>
         [MemoryPackOrder(4)]
         public byte[]? Coverall { get; set; }
