@@ -10,34 +10,37 @@ using System.Threading.Tasks;
 namespace SparrowCloud.Models.Storage
 {
     /// <summary>
-	/// 文件缩略图 实体
+	/// 文件缩略图（偏图像数据）
 	/// 依赖表：storage_files
-	/// 一对一关系：一个文件对应一个缩略图
+	/// 一对一关系：(one)缩略图 -> one 文件
 	/// </summary>
 	public class StorageFileThumbnail : EntityIncr<long>
 	{
 		/// <summary>
-		/// 小图二进制数据(128*128)
+		/// 小图 二进制数据(64*64)
 		/// </summary>
 		public required byte[] SmallData { get; set; }
 
 		/// <summary>
-		/// 中图二进制数据(512*512)
+		/// 中图 二进制数据(128*128)
 		/// </summary>
 		public required byte[] MediumData { get; set; }
 
 		/// <summary>
-		/// 大图二进制数据(1024*1024)
+		/// 大图 二进制数据(256*256)
 		/// </summary>
 		public required byte[] LargeData { get; set; }
 
-		/// <summary>
-		/// 关联文件ID（外键）
-		/// </summary>
-		public long StorageFileId { get; set; }
-		// ==============================================
-		// 导航属性（一对一）主表
-		// ==============================================
+        /// <summary>
+        /// 封面 二进制数据(用户自定义)
+        /// </summary>
+        public byte[]? CoverData { get; set; }
+
+        /// <summary>
+        /// 关联文件ID（外键）
+        /// </summary>
+        public long StorageFileId { get; set; }
+
 		/// <summary>
 		/// 关联的文件
 		/// </summary>
@@ -50,17 +53,16 @@ namespace SparrowCloud.Models.Storage
 		{
 			builder.ToTable("storage_file_thumbnails");
 
-			// ==============================================
-			// 一对一关系配置（外键在缩略图表）
-			// ==============================================
-			builder.HasOne(x => x.StorageFile)
+            // ==============================================
+            // 一对一关系配置（外键在当前表）
+            // ==============================================
+            builder.HasOne(x => x.StorageFile)
 				   .WithOne(x => x.Thumbnail)
 				   .HasForeignKey<StorageFileThumbnail>(x => x.StorageFileId)
 				   .IsRequired()
-				   .OnDelete(DeleteBehavior.Cascade); // 级联删除（文件删除 → 缩略图自动删除）
-
-			// 唯一约束：保证一个文件只有一组缩略图
-			builder.HasIndex(x => x.StorageFileId).IsUnique();
+				   .OnDelete(DeleteBehavior.Cascade); // 级联删除（文件删除 → 自动关联删除）
+            // 唯一约束：保证一一对应
+            builder.HasIndex(x => x.StorageFileId).IsUnique();
 		}
 	}
 }

@@ -131,19 +131,17 @@ namespace SparrowCloud.Models.Storage
         /// </summary>
         public DateTime? Missing { get; set; }
 
+        #region 导航属性
         /// <summary>
-        /// 备注（预留字段，可用于文件描述）
+        /// 文件额外信息
         /// </summary>
-        [MaxLength(4095)]
-        public string? Remark { get; set; }
-		
-		// ==============================================
-		// 导航属性（一对一）缩略图
-		// ==============================================
-		/// <summary>
-		/// 关联的文件
-		/// </summary>
-		public virtual StorageFileThumbnail? Thumbnail { get; set; }
+        public virtual StorageFileInformation? Information { get; set; }
+
+        /// <summary>
+        /// 文件缩略图
+        /// </summary>
+        public virtual StorageFileThumbnail? Thumbnail { get; set; }
+        #endregion
     }
 
     public class StorageFilesConfig : IEntityTypeConfiguration<StorageFile>
