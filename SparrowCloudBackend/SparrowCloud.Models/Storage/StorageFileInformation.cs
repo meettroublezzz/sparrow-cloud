@@ -7,7 +7,7 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
+using SparrowCloud.Utils;
 
 namespace SparrowCloud.Models.Storage
 {
@@ -83,9 +83,19 @@ namespace SparrowCloud.Models.Storage
         [MaxLength(65535)]
         public string? Remark { get; set; }
 
-        // get 维护同一个实例
+        #region 参考引用相关处理
+        /// <summary>
+        /// 复用空集合初始数据
+        /// </summary>
+        [NotMapped]
+        private static readonly byte[] _emptyListData = CompressionHelper.CompressBytes(MemoryPackSerializer.Serialize<List<ReferenceItem>>([]));
+        
+        /// <summary>
+        /// 当前实例复用同一份数据
+        /// </summary>
         [NotMapped]
         private List<ReferenceItem>? references = null;
+
         /// <summary>
         /// 文件的参考信息（修改集合后，一定要 set 回来）
         /// </summary>
@@ -95,20 +105,22 @@ namespace SparrowCloud.Models.Storage
             get
             {
                 if (references == null)
-                    references = MemoryPackSerializer.Deserialize<List<ReferenceItem>>(ReferencesData);
+                    references = MemoryPackSerializer.Deserialize<List<ReferenceItem>>(CompressionHelper.DecompressBytes(ReferencesData));
 
                 return references!;
             } 
 
             set
             {
-                ReferencesData = MemoryPackSerializer.Serialize(value);
+                ReferencesData = CompressionHelper.CompressBytes(MemoryPackSerializer.Serialize(value));
             }
         }
+        
         /// <summary>
-        /// 文件的参考信息（数据库存储字段）
+        /// 文件的参考信息（数据库存储字段，二进制数据）
         /// </summary>
-        public byte[] ReferencesData { get; set; } = MemoryPackSerializer.Serialize<List<ReferenceItem>>([]);
+        public byte[] ReferencesData { get; set; } = _emptyListData;
+        #endregion
 
         /// <summary>
         /// 关联文件ID（外键）
