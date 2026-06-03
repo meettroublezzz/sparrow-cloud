@@ -39,18 +39,24 @@ namespace SparrowCloud.Services.Storage
 
             var references = file.Information.References;
 
-            foreach (var item in references)
-            {
-                Console.WriteLine($"r -> {item.Id}: {item.Title}");
-            }
-            Console.WriteLine();
-
             references.Add(new()
             {
                 Id = EntityBase.GenerateGuid(),
                 Type = ReferenceType.Source,
                 Title = Random.Shared.Next().ToString(),
             });
+
+            if (references.Count == 5)
+            {
+                references.Clear();
+            }
+
+            Console.WriteLine($"r-count -> {references.Count}");
+            foreach (var item in references)
+            {
+                Console.WriteLine($"item -> {item.Id}: {item.Title}");
+            }
+            Console.WriteLine();
 
             file.Information.References = references;
 

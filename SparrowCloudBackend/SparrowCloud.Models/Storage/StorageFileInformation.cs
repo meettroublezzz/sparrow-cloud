@@ -85,12 +85,6 @@ namespace SparrowCloud.Models.Storage
 
         #region 参考引用相关处理
         /// <summary>
-        /// 复用空集合初始数据
-        /// </summary>
-        [NotMapped]
-        private static readonly byte[] _emptyListData = CompressionHelper.CompressBytes(MemoryPackSerializer.Serialize<List<ReferenceItem>>([]));
-        
-        /// <summary>
         /// 当前实例复用同一份数据
         /// </summary>
         [NotMapped]
@@ -105,21 +99,31 @@ namespace SparrowCloud.Models.Storage
             get
             {
                 if (references == null)
-                    references = MemoryPackSerializer.Deserialize<List<ReferenceItem>>(CompressionHelper.DecompressBytes(ReferencesData));
+                    references = ReferencesData == null ? [] : MemoryPackSerializer.Deserialize<List<ReferenceItem>>(CompressionHelper.DecompressBytes(ReferencesData));
 
                 return references!;
             } 
 
             set
             {
-                ReferencesData = CompressionHelper.CompressBytes(MemoryPackSerializer.Serialize(value));
+                references = value;
+
+                // 空集合则直接回写为null
+                if (value.Count == 0)
+                {
+                    ReferencesData = null;
+                }
+                else
+                {
+                    ReferencesData = CompressionHelper.CompressBytes(MemoryPackSerializer.Serialize(value));
+                }
             }
         }
         
         /// <summary>
         /// 文件的参考信息（数据库存储字段，二进制数据）
         /// </summary>
-        public byte[] ReferencesData { get; set; } = _emptyListData;
+        public byte[]? ReferencesData { get; set; }
         #endregion
 
         /// <summary>
