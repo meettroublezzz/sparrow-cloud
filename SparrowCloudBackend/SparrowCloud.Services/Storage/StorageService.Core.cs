@@ -1,9 +1,10 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using EFCore.BulkExtensions;
+using Microsoft.EntityFrameworkCore;
+using SparrowCloud.Models;
 using SparrowCloud.Models.Storage;
 using SparrowCloud.Utils;
 using System.Data;
 using System.Diagnostics;
-using EFCore.BulkExtensions;
 
 namespace SparrowCloud.Services.Storage
 {
@@ -432,7 +433,7 @@ namespace SparrowCloud.Services.Storage
                     await db.StorageFiles
                         .Where(e => e.Id == recordValue.Id)
                         .ExecuteUpdateAsync(e => e
-                            .SetProperty(s => s.Missing, DateTime.Now)
+                            .SetProperty(s => s.Missing, EntityBase.NowTicks)
                         );
                     Console.WriteLine($"数据库遍历 -> 缺失文件：Id={recordValue.Id}; {file.Path}");
                 }

@@ -1,8 +1,13 @@
+# 忽略操作系统生成的文件
+DS_Store
+Thumbs.db
+Desktop.ini
+
 # IDE 配置
 .vs/
 .vscode/
 
-# .NET 编译输出（所有子项目通用）
+# 后端 配置
 bin/
 obj/
 
@@ -12,6 +17,25 @@ packages/
 *.suo
 *.pdb
 
-# Windows
-Thumbs.db
-Desktop.ini
+# 忽略环境变量文件
+env.local
+env.*.local
+
+# 前端 配置
+node_modules/
+*.log
+dist/
+build/
+# 忽略日志文件
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+# 锁定文件
+package-lock.json
+yarn.lock
+# 自动生成的类型声明文件
+auto-imports.d.ts
+components.d.ts
+# 缓存目录
+cache/

@@ -22,12 +22,12 @@ namespace SparrowCloud.Models
         /// <summary>
         /// 创建时间
         /// </summary>
-        public DateTime CreateAt { get; set; } = DateTime.Now;
+        public long CreateAt { get; set; } = EntityBase.NowTicks;
 
         /// <summary>
         /// 最后修改日期
         /// </summary>
-        public DateTime? UpdateAt { get; set; }
+        public long? UpdateAt { get; set; }
     }
 
     /// <summary>
@@ -43,6 +43,16 @@ namespace SparrowCloud.Models
         {
             return Guid.NewGuid().ToString();
         }
+
+        /// <summary>
+        /// 获取当前时间戳（当前时区，非UTC）
+        /// </summary>
+        public static long NowTicks { get => DateTime.Now.Ticks; }
+
+        /// <summary>
+        /// 获取当前时间戳（当前时区，非UTC）
+        /// </summary>
+        public static long UtcNowTicks { get => DateTime.UtcNow.Ticks; }
     }
 
     /// <summary>

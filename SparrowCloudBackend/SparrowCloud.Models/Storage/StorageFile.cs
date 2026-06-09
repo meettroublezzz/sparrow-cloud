@@ -123,13 +123,13 @@ namespace SparrowCloud.Models.Storage
         /// 删除时间（回收站，软删除；清空回收站则真实清理这些文件）
         /// 原理：将要删除的 文件/目录 移动到数据仓库内
         /// </summary>
-        public DateTime? DeletedAt { get; set; }
+        public long? DeletedAt { get; set; }
 
         /// <summary>
         /// 此文件缺失标志位
         /// 正常 = null
         /// </summary>
-        public DateTime? Missing { get; set; }
+        public long? Missing { get; set; }
 
         #region 导航属性
         /// <summary>

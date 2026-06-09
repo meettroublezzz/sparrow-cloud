@@ -27,7 +27,7 @@ namespace SparrowCloud.Host.Controllers
             _manager = manager;
         }
 
-        const string UserId = "zyq";
+        public const string UserId = "zyq";
 
         [HttpGet]
         public async Task<dynamic> Test()

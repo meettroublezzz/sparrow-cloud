@@ -18,6 +18,17 @@ namespace SparrowCloud.Host
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
 
+            builder.Services.AddCors(options =>
+            {
+                options.AddPolicy("AllowAll", policy =>
+                {
+                    policy.AllowAnyOrigin()
+                          .AllowAnyMethod()
+                          .AllowAnyHeader()
+                          .WithExposedHeaders("*"); 
+                });
+            });
+
             builder.Services
                 .AddControllers()
                 .AddNewtonsoftJson(options =>
@@ -35,6 +46,22 @@ namespace SparrowCloud.Host
                     //options.SerializerSettings.NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore;
                 });
 
+            const long MaxFileSize = 1024L * 1024L * 1024L * 1024L;
+            builder.Services.Configure<Microsoft.AspNetCore.Http.Features.FormOptions>(options =>
+            {
+                // 单个文件最大值
+                options.MultipartBodyLengthLimit = MaxFileSize;
+            });
+            builder.WebHost.ConfigureKestrel(serverOptions =>
+            {
+                // 最大请求体大小
+                serverOptions.Limits.MaxRequestBodySize = MaxFileSize;
+
+                // 请求超时设置
+                serverOptions.Limits.RequestHeadersTimeout = TimeSpan.FromMinutes(32);
+                serverOptions.Limits.KeepAliveTimeout = TimeSpan.FromMinutes(32);
+            });
+
             builder.Services.AddSparrowModels(builder.Configuration);
             builder.Services.AddSparrowServices();
 
@@ -46,6 +73,8 @@ namespace SparrowCloud.Host
             // Configure the HTTP request pipeline.
 
             app.UseMiddleware<HttpMethodOverrideMiddleware>();
+
+            app.UseCors("AllowAll");
 
             if (app.Environment.IsDevelopment())
             {

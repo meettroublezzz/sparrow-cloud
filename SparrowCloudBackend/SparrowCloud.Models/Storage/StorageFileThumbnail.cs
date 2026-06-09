@@ -32,9 +32,9 @@ namespace SparrowCloud.Models.Storage
 		public required byte[] LargeData { get; set; }
 
         /// <summary>
-        /// 封面 二进制数据(用户自定义)
+        /// 封面 桶存储引用(用户自定义)
         /// </summary>
-        public byte[]? CoverData { get; set; }
+        public string? CoverInBucket { get; set; }
 
         /// <summary>
         /// 关联文件ID（外键）

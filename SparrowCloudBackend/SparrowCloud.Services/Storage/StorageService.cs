@@ -18,6 +18,11 @@ namespace SparrowCloud.Services.Storage
         /// 文件库 回收站目录名称
         /// </summary>
         public const string StorageRecycledName = @"RecycledFiles";
+
+        /// <summary>
+        /// 文件库 桶文件目录名称
+        /// </summary>
+        public const string StorageBucketName = @"Buckets";
         #endregion
 
         /// <summary>
@@ -41,6 +46,11 @@ namespace SparrowCloud.Services.Storage
         private readonly string _recycledWorkPath;
 
         /// <summary>
+        /// 文件库内桶文件工作路径
+        /// </summary>
+        private readonly string _bucketWorkPath;
+
+        /// <summary>
         /// 文件库元数据配置信息
         /// </summary>
         private readonly StorageMetadata _metadata;
@@ -56,10 +66,13 @@ namespace SparrowCloud.Services.Storage
             _workPath = Path.Combine(_rootPath, StorageManager.StandaloneDirectoryName, StorageManager.SparrowCloudName);
 
             _recycledWorkPath = Path.Combine(_workPath, StorageRecycledName);
+            _bucketWorkPath = Path.Combine(_workPath, StorageBucketName);
 
-            // 确保文件夹存在
+            /* 确保文件夹存在 */
             Directory.CreateDirectory(_workPath);
+
             Directory.CreateDirectory(_recycledWorkPath);
+            Directory.CreateDirectory(_bucketWorkPath);
         }
         
         /// <summary>

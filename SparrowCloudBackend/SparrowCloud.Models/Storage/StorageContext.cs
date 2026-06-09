@@ -41,8 +41,12 @@ namespace SparrowCloud.Models.Storage
             modelBuilder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly(), t => t.Namespace == ns);
         }
 
+        public DbSet<StorageConfig> StorageConfigs { get; set; }
+
         public DbSet<StorageFile> StorageFiles { get; set; }
         public DbSet<StorageFileInformation> StorageFileInformation { get; set; }
         public DbSet<StorageFileThumbnail> StorageFileThumbnails { get; set; }
+
+        public DbSet<StorageBucket> StorageBuckets { get; set; }
     }
 }
