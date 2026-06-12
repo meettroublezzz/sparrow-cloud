@@ -36,6 +36,18 @@ namespace SparrowCloud.Models
     public static class EntityBase
     {
         /// <summary>
+        /// Sqlite 优化命令
+        /// </summary>
+        public const string SqliteOptimizeCommandText = @"
+            PRAGMA journal_mode=WAL;
+            PRAGMA synchronous=NORMAL;
+            PRAGMA wal_autocheckpoint=1000;
+            PRAGMA cache_size = -100000;
+            PRAGMA temp_store = MEMORY;
+            PRAGMA mmap_size = 30000000000;
+        ";
+
+        /// <summary>
         /// 新生成GUID值（36 个字符）
         /// </summary>
         /// <returns></returns>

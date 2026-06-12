@@ -61,12 +61,22 @@ namespace SparrowCloud.Services.Storage
             }
             else
             {
-                using (var fileStream = new FileStream(filePath, FileMode.Create, FileAccess.Write))
+                try
                 {
-                    await stream.CopyToAsync(fileStream);
+                    using (var fileStream = new FileStream(filePath, FileMode.Create, FileAccess.Write))
+                    {
+                        await stream.CopyToAsync(fileStream);
 
-                    if (fileStream.Length != length)
-                        throw new ServiceException("桶文件上传长度不相等！");
+                        if (fileStream.Length != length)
+                            throw new ServiceException("桶文件上传长度不相等！");
+                    }
+                }
+                catch
+                {
+                    // 避免网络中断等情况造成碎片文件
+                    File.Delete(filePath);
+
+                    throw;
                 }
             }
 

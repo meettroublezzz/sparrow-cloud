@@ -16,23 +16,23 @@ namespace SparrowCloud.Models.Storage
 	/// </summary>
 	public class StorageFileThumbnail : EntityIncr<long>
 	{
-		/// <summary>
-		/// 小图 二进制数据(64*64)
-		/// </summary>
-		public required byte[] SmallData { get; set; }
-
-		/// <summary>
-		/// 中图 二进制数据(128*128)
-		/// </summary>
-		public required byte[] MediumData { get; set; }
-
-		/// <summary>
-		/// 大图 二进制数据(256*256)
-		/// </summary>
-		public required byte[] LargeData { get; set; }
+        /// <summary>
+        /// 小图 桶存储引用 (64*64)
+        /// </summary>
+        public required string SmallInBucket { get; set; }
 
         /// <summary>
-        /// 封面 桶存储引用(用户自定义)
+        /// 中图 桶存储引用 (128*128)
+        /// </summary>
+        public required string MediumInBucket { get; set; }
+
+        /// <summary>
+        /// 大图 桶存储引用 (256*256)
+        /// </summary>
+        public required string LargeInBucket { get; set; }
+
+        /// <summary>
+        /// 封面 桶存储引用 (用户自定义)
         /// </summary>
         public string? CoverInBucket { get; set; }
 
@@ -44,7 +44,7 @@ namespace SparrowCloud.Models.Storage
 		/// <summary>
 		/// 关联的文件
 		/// </summary>
-		public StorageFile? StorageFile { get; set; }
+		public StorageFile StorageFile { get; set; }
 	}
 
     public class StorageFileThumbnailConfig : IEntityTypeConfiguration<StorageFileThumbnail>

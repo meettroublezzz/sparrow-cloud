@@ -47,15 +47,9 @@ namespace SparrowCloud.Host.Controllers
             }
             catch (ServiceException se)
             {
-                _logger.LogWarning(se, "文件上传异常");
+                _logger.LogWarning(se, "桶文件上传异常");
 
                 return StatusCode(se.Code, se.Message);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "文件上传失败");
-
-                return StatusCode(StatusCodes.Status500InternalServerError, "文件上传失败");
             }
         }
 
@@ -79,15 +73,9 @@ namespace SparrowCloud.Host.Controllers
             }
             catch (ServiceException se)
             {
-                _logger.LogWarning(se, "文件获取异常");
+                _logger.LogWarning(se, "桶文件获取异常");
 
                 return StatusCode(se.Code, se.Message);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "文件获取失败");
-
-                return StatusCode(StatusCodes.Status500InternalServerError, "文件获取失败");
             }
         }
 
@@ -111,15 +99,9 @@ namespace SparrowCloud.Host.Controllers
             }
             catch (ServiceException se)
             {
-                _logger.LogWarning(se, "文件删除异常");
+                _logger.LogWarning(se, "桶文件删除异常");
 
                 return StatusCode(se.Code, se.Message);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "文件删除失败");
-
-                return StatusCode(StatusCodes.Status500InternalServerError, "文件删除失败");
             }
         }
     }

@@ -32,7 +32,7 @@ namespace SparrowCloud.Models.Storage
         /// <summary>
         /// 关联的文件
         /// </summary>
-        public StorageFile? StorageFile { get; set; }
+        public StorageFile StorageFile { get; set; }
     }
 
     public class StorageFileInformationConfig : IEntityTypeConfiguration<StorageFileInformation>

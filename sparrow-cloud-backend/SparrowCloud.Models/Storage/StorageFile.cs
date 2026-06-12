@@ -24,6 +24,12 @@ namespace SparrowCloud.Models.Storage
         public required string FullPath { get; set; }
 
         /// <summary>
+        /// Path拼接所需相对完整的路径
+        /// </summary>
+        [NotMapped]
+        public string RelativeFullPath { get => FullPath.TrimStart('/'); }
+
+        /// <summary>
         /// 完整路径的 XXH64 哈希值
         /// </summary>
         public long FullPathHash { get; set; }

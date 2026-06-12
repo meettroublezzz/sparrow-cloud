@@ -18,14 +18,7 @@ namespace SparrowCloud.Models.Storage
 
             using var cmd = conn.CreateCommand();
             // sqlite 优化
-            cmd.CommandText = @"
-                PRAGMA journal_mode=WAL;
-                PRAGMA synchronous=NORMAL;
-                PRAGMA wal_autocheckpoint=1000;
-                PRAGMA cache_size = -100000;
-                PRAGMA temp_store = MEMORY;
-                PRAGMA mmap_size = 30000000000;
-            ";
+            cmd.CommandText = EntityBase.SqliteOptimizeCommandText;
             cmd.ExecuteNonQuery();
         }
 

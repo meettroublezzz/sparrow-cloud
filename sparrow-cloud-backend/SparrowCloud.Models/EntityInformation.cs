@@ -1,4 +1,5 @@
 ﻿using MemoryPack;
+using Microsoft.EntityFrameworkCore;
 using SparrowCloud.Models.Storage;
 using SparrowCloud.Utils;
 using System;
@@ -70,14 +71,17 @@ namespace SparrowCloud.Models
     /// <summary>
     /// 通用信息字段结构（需要继承类处理自增主键问题）
     /// </summary>
+    [Index(nameof(FavoritedAt))]
+    [Index(nameof(StarLevel))]
     public class EntityInformation<TKeyType> : EntityBase<TKeyType>
     {
         /// <summary>
         /// 备注（可用于文件描述）
         /// 支持md格式（默认‘普通文本’，在字符串开头放置 <!-- this is markdown --> 注释表达是‘Markdown’内容）
+        /// 默认无说明，方便前端处理。
         /// </summary>
         [MaxLength(65535)]
-        public string? Remark { get; set; }
+        public string Remark { get; set; } = string.Empty;
 
         #region 参考引用相关处理
         /// <summary>
@@ -125,12 +129,15 @@ namespace SparrowCloud.Models
 
         /// <summary>
         /// 收藏（喜爱）
+        /// null 表达未收藏
         /// </summary>
+        
         public long? FavoritedAt { get; set; }
 
         /// <summary>
         /// 星级（满十分）半星=1分
+        /// 默认0分，方便前端处理。
         /// </summary>
-        public byte? StarLevel { get; set; }
+        public byte StarLevel { get; set; } = 0;
     }
 }
