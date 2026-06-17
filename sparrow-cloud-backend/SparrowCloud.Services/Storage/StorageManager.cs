@@ -125,7 +125,7 @@ namespace SparrowCloud.Services.Storage
 
             return await _db.IntermStorages
                 .Where(e => e.UserId == uid)
-                .OrderBy(e => e.Sequence)
+                .OrderByDescending(e => e.Sequence)
                 .Select(e => new
                 {
                     Id = e.StorageId,
@@ -152,9 +152,9 @@ namespace SparrowCloud.Services.Storage
         {
             return await _db.IntermStorages
                 .Where(x => x.UserId == uid)
-                .OrderBy(x => x.Sequence) // 按拖拽顺序排序
+                //.OrderByDescending(x => x.Sequence) // 按拖拽顺序排序
                 .Select(x => x.Sequence)
-                .SingleOrDefaultAsync();
+                .MaxAsync();
         }
 
         /// <summary>
@@ -165,6 +165,9 @@ namespace SparrowCloud.Services.Storage
         {
             string rootPath = Path.TrimEndingDirectorySeparator(path);
 
+            if (!Directory.Exists(rootPath))
+                throw new ServiceException("此文件库路径实际不存在！", 404);
+
             string name = Path.GetFileName(rootPath);
 
             // 此文件库是否已在数据库内
@@ -172,7 +175,7 @@ namespace SparrowCloud.Services.Storage
 
             if (any)
             {
-                throw new ServiceException("此文件库已经加载过了");
+                throw new ServiceException("此文件库已经加载过了(PATH)");
             }
 
             // 文件库/数据仓库/
@@ -184,15 +187,7 @@ namespace SparrowCloud.Services.Storage
             // 这个文件库里是否存在数据仓库
             if (Directory.Exists(basePath))
             {
-                metadata = await AttachStorageAsync(basePath);
-
-                // 此文件库是否已在数据库内
-                any = await _db.IntermStorages.AnyAsync(e => e.UserId == uid && e.StorageId == metadata.StorageGuid);
-
-                if (any)
-                {
-                    throw new ServiceException("此文件库已经加载过了");
-                }
+                metadata = await AttachStorageAsync(basePath, uid);
             }
             else
             {
@@ -203,7 +198,7 @@ namespace SparrowCloud.Services.Storage
 
             IntermStorage model = new()
             {
-                Id = EntityBase.GenerateGuid(),
+                Id = default,
                 Name = name,
 
                 UserId = uid,
@@ -211,7 +206,7 @@ namespace SparrowCloud.Services.Storage
 
                 RootPath = rootPath,
 
-                Sequence = seq + IntermStorage.SequenceStepSize,
+                Sequence = seq + EntityBase.SequenceStepSize,
             };
 
             // 添加入库
@@ -223,7 +218,7 @@ namespace SparrowCloud.Services.Storage
 
             _storages.TryAdd($"{uid}+{metadata.StorageGuid}", storage);
 
-            return model.Id;
+            return model.StorageId;
         }
 
         /// <summary>
@@ -261,7 +256,7 @@ namespace SparrowCloud.Services.Storage
         /// </summary>
         /// <param name="basePath">文件库/数据仓库/</param>
         /// <returns></returns>
-        private async Task<StorageMetadata> AttachStorageAsync(string basePath)
+        private async Task<StorageMetadata> AttachStorageAsync(string basePath, string uid)
         {
             // 检测数据仓库的状态
             string metadataPath = Path.Combine(basePath, MetadataFileName);
@@ -274,6 +269,14 @@ namespace SparrowCloud.Services.Storage
             // 读取元数据
             var metadata = JsonConvert.DeserializeObject<StorageMetadata>(File.ReadAllText(metadataPath))!;
 
+            // 此文件库是否已在数据库内
+            bool any = await _db.IntermStorages.AnyAsync(e => e.UserId == uid && e.StorageId == metadata.StorageGuid);
+
+            if (any)
+            {
+                throw new ServiceException("此文件库已经加载过了(GUID)");
+            }
+
             return metadata;
         }
     
@@ -283,9 +286,9 @@ namespace SparrowCloud.Services.Storage
         /// <param name="uid"></param>
         /// <param name="id"></param>
         /// <returns></returns>
-        public async Task RemoveStorageAsync(string uid, string id)
+        public async Task RemoveStorageAsync(string uid, string storageId)
         {
-            IntermStorage record = await _db.IntermStorages.SingleAsync(e => e.UserId == uid && e.Id == id);
+            IntermStorage record = await _db.IntermStorages.SingleAsync(e => e.UserId == uid && e.StorageId == storageId);
 
             _db.IntermStorages.Remove(record);
             
@@ -293,7 +296,7 @@ namespace SparrowCloud.Services.Storage
 
             _storages.Remove($"{uid}+{record.StorageId}", out _);
         }
-    
+        
         /// <summary>
         /// 获取文件库对象
         /// </summary>

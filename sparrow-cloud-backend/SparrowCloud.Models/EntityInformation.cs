@@ -131,8 +131,8 @@ namespace SparrowCloud.Models
         /// 收藏（喜爱）
         /// null 表达未收藏
         /// </summary>
-        
-        public long? FavoritedAt { get; set; }
+
+        public long? FavoritedAt { get; set; } = null;
 
         /// <summary>
         /// 星级（满十分）半星=1分

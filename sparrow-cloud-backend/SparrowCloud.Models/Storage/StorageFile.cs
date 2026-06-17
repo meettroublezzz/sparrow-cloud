@@ -17,7 +17,7 @@ namespace SparrowCloud.Models.Storage
     {
         #region 跟踪真实文件
         /// <summary>
-        /// 完整路径（要求目录必须以 ‘/’ 结尾，文件不能以 ‘/’ 结尾）
+        /// 完整路径（要求所有记录，必须以‘/’开头；然后目录必须以 ‘/’ 结尾，但文件不能以 ‘/’ 结尾）
         /// 示例：/新建文件夹/ 、/test.txt 、/新建文件夹/new.txt
         /// </summary>
         [MaxLength(4095)]
@@ -147,6 +147,11 @@ namespace SparrowCloud.Models.Storage
         /// 文件缩略图
         /// </summary>
         public virtual StorageFileThumbnail? Thumbnail { get; set; }
+
+        /// <summary>
+        /// 关联的文件集合
+        /// </summary>
+        public List<StorageFileJoinTag> FileTags { get; set; } = new();
         #endregion
     }
 

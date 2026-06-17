@@ -23,11 +23,15 @@ namespace SparrowCloud.Models
         /// 创建时间
         /// </summary>
         public long CreateAt { get; set; } = EntityBase.NowTicks;
+        [NotMapped]
+        public DateTime CreateTime { get => new DateTime(CreateAt); }
 
         /// <summary>
         /// 最后修改日期
         /// </summary>
         public long? UpdateAt { get; set; }
+        [NotMapped]
+        public DateTime? UpdateTime { get => UpdateAt == null ? null : new DateTime((long)UpdateAt); }
     }
 
     /// <summary>
@@ -35,6 +39,11 @@ namespace SparrowCloud.Models
     /// </summary>
     public static class EntityBase
     {
+        /// <summary>
+        /// 新增次序步长
+        /// </summary>
+        public const double SequenceStepSize = 10000d;
+
         /// <summary>
         /// Sqlite 优化命令
         /// </summary>
@@ -62,7 +71,7 @@ namespace SparrowCloud.Models
         public static long NowTicks { get => DateTime.Now.Ticks; }
 
         /// <summary>
-        /// 获取当前时间戳（当前时区，非UTC）
+        /// 获取当前时间戳（当前时区，是UTC）
         /// </summary>
         public static long UtcNowTicks { get => DateTime.UtcNow.Ticks; }
     }

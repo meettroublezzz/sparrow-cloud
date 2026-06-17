@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace SparrowCloud.Models.Intermediate
 {
-    public class IntermStorage : EntityBase<string>
+    public class IntermStorage : EntityIncr<int>
     {
         /*
          * 一对多关系
@@ -40,11 +40,7 @@ namespace SparrowCloud.Models.Intermediate
         /// 次序（允许用户手动排序）
         /// </summary>
         public required double Sequence { get; set; }
-        /// <summary>
-        /// 新增次序步长
-        /// </summary>
-        public const double SequenceStepSize = 10000d;
-
+        
         /// <summary>
         /// 文件库缺失标志位
         /// 正常 = null
