@@ -159,14 +159,14 @@ namespace SparrowCloud.Services.Storage
             try
             {
                 // 删掉此文件的全部绑定标签
-                await db.FileJoinTags
+                await db.StorageTagFile
                 .Where(e => e.FileId == fileId)
                 .ExecuteDeleteAsync();
 
                 // 覆盖式回写
                 foreach (var tid in tagIds)
                 {
-                    db.FileJoinTags.Add(new StorageFileJoinTag()
+                    db.StorageTagFile.Add(new StorageTagFile()
                     {
                         Id = default,
 

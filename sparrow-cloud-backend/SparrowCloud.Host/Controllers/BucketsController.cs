@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using NetTopologySuite.Algorithm;
-using SparrowCloud.Models.Intermediate;
+using SparrowCloud.Models.Union;
 using SparrowCloud.Services;
 using SparrowCloud.Services.Storage;
 
@@ -13,14 +13,14 @@ namespace SparrowCloud.Host.Controllers
     {
         private readonly ILogger<BucketsController> _logger;
 
-        private readonly IntermediateContext _dbInterm;
+        private readonly UnionContext _dbUnion;
 
         private readonly StorageManager _manager;
 
-        public BucketsController(ILogger<BucketsController> logger, IntermediateContext dbInterm, StorageManager manager)
+        public BucketsController(ILogger<BucketsController> logger, UnionContext dbUnion, StorageManager manager)
         {
             _logger = logger;
-            _dbInterm = dbInterm;
+            _dbUnion = dbUnion;
             _manager = manager;
         }
 

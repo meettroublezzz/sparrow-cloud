@@ -39,9 +39,10 @@ namespace SparrowCloud.Models.Storage
         public DbSet<StorageFile> StorageFiles { get; set; }
         public DbSet<StorageFileInformation> StorageFileInformation { get; set; }
         public DbSet<StorageFileThumbnail> StorageFileThumbnails { get; set; }
+        public DbSet<StorageFileAggregate> StorageFileAggregates { get; set; }
 
         public DbSet<StorageTag> StorageTags { get; set; }
-        public DbSet<StorageFileJoinTag> FileJoinTags { get; set; }
+        public DbSet<StorageTagFile> StorageTagFile { get; set; }
 
         public DbSet<StorageBucket> StorageBuckets { get; set; }
     }

@@ -3,7 +3,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using SparrowCloud.Models;
-using SparrowCloud.Models.Intermediate;
+using SparrowCloud.Models.Union;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -35,11 +35,11 @@ namespace SparrowCloud.Services.Storage
 
         private readonly ILogger<StorageManager> _logger;
 
-        private readonly IntermediateContext _db;
+        private readonly UnionContext _db;
 
         private readonly IConfiguration _configuration;
 
-        public StorageManager(ILogger<StorageManager> logger, IConfiguration configuration, IntermediateContext db)
+        public StorageManager(ILogger<StorageManager> logger, IConfiguration configuration, UnionContext db)
         {
             _logger = logger;
             _configuration = configuration;
@@ -55,13 +55,13 @@ namespace SparrowCloud.Services.Storage
         /// <summary>
         /// 初始化文件库管理器
         /// </summary>
-        public static async Task InitAsync(IntermediateContext db)
+        public static async Task InitAsync(UnionContext db)
         {
             /*
              * 从数据库读取当前所有挂载的文件库，初始化管理器；
              */
 
-            var dataset = db.IntermStorages
+            var dataset = db.UnionStorages
                     .Where(e => e.Missing == null && e.Damaged == null)
                     .ToArray();
 
@@ -123,7 +123,7 @@ namespace SparrowCloud.Services.Storage
                 .Select(e => e.Split('+')[1])
                 .ToArray();
 
-            return await _db.IntermStorages
+            return await _db.UnionStorages
                 .Where(e => e.UserId == uid)
                 .OrderByDescending(e => e.Sequence)
                 .Select(e => new
@@ -150,11 +150,10 @@ namespace SparrowCloud.Services.Storage
         /// <returns></returns>
         public async Task<double> GetLastSequenceAsync(string uid)
         {
-            return await _db.IntermStorages
+            return await _db.UnionStorages
                 .Where(x => x.UserId == uid)
-                //.OrderByDescending(x => x.Sequence) // 按拖拽顺序排序
-                .Select(x => x.Sequence)
-                .MaxAsync();
+                .Select(x => (double?)x.Sequence)
+                .MaxAsync() ?? 0;
         }
 
         /// <summary>
@@ -171,7 +170,7 @@ namespace SparrowCloud.Services.Storage
             string name = Path.GetFileName(rootPath);
 
             // 此文件库是否已在数据库内
-            bool any = await _db.IntermStorages.AnyAsync(e => e.UserId == uid && e.RootPath == rootPath);
+            bool any = await _db.UnionStorages.AnyAsync(e => e.UserId == uid && e.RootPath == rootPath);
 
             if (any)
             {
@@ -196,7 +195,7 @@ namespace SparrowCloud.Services.Storage
 
             double seq = await GetLastSequenceAsync(uid);
 
-            IntermStorage model = new()
+            UnionStorage model = new()
             {
                 Id = default,
                 Name = name,
@@ -210,7 +209,7 @@ namespace SparrowCloud.Services.Storage
             };
 
             // 添加入库
-            _db.IntermStorages.Add(model);
+            _db.UnionStorages.Add(model);
             _db.SaveChanges();
 
             // 实例化文件库
@@ -270,7 +269,7 @@ namespace SparrowCloud.Services.Storage
             var metadata = JsonConvert.DeserializeObject<StorageMetadata>(File.ReadAllText(metadataPath))!;
 
             // 此文件库是否已在数据库内
-            bool any = await _db.IntermStorages.AnyAsync(e => e.UserId == uid && e.StorageId == metadata.StorageGuid);
+            bool any = await _db.UnionStorages.AnyAsync(e => e.UserId == uid && e.StorageId == metadata.StorageGuid);
 
             if (any)
             {
@@ -288,9 +287,9 @@ namespace SparrowCloud.Services.Storage
         /// <returns></returns>
         public async Task RemoveStorageAsync(string uid, string storageId)
         {
-            IntermStorage record = await _db.IntermStorages.SingleAsync(e => e.UserId == uid && e.StorageId == storageId);
+            UnionStorage record = await _db.UnionStorages.SingleAsync(e => e.UserId == uid && e.StorageId == storageId);
 
-            _db.IntermStorages.Remove(record);
+            _db.UnionStorages.Remove(record);
             
             await _db.SaveChangesAsync();
 
@@ -325,7 +324,7 @@ namespace SparrowCloud.Services.Storage
             await storage.ScanFilesAsync();
 
             // 记录扫描时间
-            await _db.IntermStorages
+            await _db.UnionStorages
                         .Where(e => e.UserId == uid && e.StorageId == storageId)
                         .ExecuteUpdateAsync(e => e
                             .SetProperty(s => s.LastScan, DateTime.Now)

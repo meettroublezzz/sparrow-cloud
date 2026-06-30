@@ -139,6 +139,15 @@ namespace SparrowCloud.Models.Storage
 
         #region 导航属性
         /// <summary>
+        /// 外键：指向聚合体ID
+        /// </summary>
+        public long? AggregateId { get; set; }
+        /// <summary>
+        /// 所属聚合体
+        /// </summary>
+        public virtual StorageFileAggregate? FileAggregate { get; set; }
+
+        /// <summary>
         /// 文件额外信息
         /// </summary>
         public virtual StorageFileInformation? Information { get; set; }
@@ -149,9 +158,9 @@ namespace SparrowCloud.Models.Storage
         public virtual StorageFileThumbnail? Thumbnail { get; set; }
 
         /// <summary>
-        /// 关联的文件集合
+        /// 文件标签
         /// </summary>
-        public List<StorageFileJoinTag> FileTags { get; set; } = new();
+        public List<StorageTagFile> FileTags { get; set; } = new();
         #endregion
     }
 

@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using SparrowCloud.Host.Middlewares;
 using SparrowCloud.Models;
-using SparrowCloud.Models.Intermediate;
+using SparrowCloud.Models.Union;
 using SparrowCloud.Services;
 using SparrowCloud.Services.Storage;
 
@@ -107,10 +107,10 @@ namespace SparrowCloud.Host
                 // 初始化数据库层的上下文
                 app.Services.InitSparrowModels();
 
-                var intermediateContext = scope.ServiceProvider.GetRequiredService<IntermediateContext>();
+                var unionContext = scope.ServiceProvider.GetRequiredService<UnionContext>();
 
                 // 初始化 文件库管理器
-                await StorageManager.InitAsync(intermediateContext);
+                await StorageManager.InitAsync(unionContext);
             }
             catch (Exception ex)
             {

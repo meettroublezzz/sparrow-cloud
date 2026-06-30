@@ -1,7 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using SparrowCloud.Models.Intermediate;
+using SparrowCloud.Models.Union;
 
 namespace SparrowCloud.Models
 {
@@ -17,12 +17,12 @@ namespace SparrowCloud.Models
         /// <returns></returns>
         public static IServiceCollection AddSparrowModels(this IServiceCollection services, IConfiguration configuration)
         {
-            services.AddDbContext<IntermediateContext>(options =>
+            services.AddDbContext<UnionContext>(options =>
             {
                 // 读取连接字符串
                 string path = configuration["SparrowConfigs:MainPath"]!;
                 // 数据库文件路径
-                path = Path.Combine(path, @"IntermSqlite.db");
+                path = Path.Combine(path, @"SparrowUnionSqlite.db");
 
                 options.UseSqlite($"Data Source={path}; Cache=Shared;");
             });
@@ -38,7 +38,7 @@ namespace SparrowCloud.Models
         {
             using var scope = serviceProvider.CreateScope();
 
-            var dbStorage = scope.ServiceProvider.GetRequiredService<IntermediateContext>();
+            var dbStorage = scope.ServiceProvider.GetRequiredService<UnionContext>();
             // 自动建库建表
             dbStorage.Database.EnsureCreated();
         }

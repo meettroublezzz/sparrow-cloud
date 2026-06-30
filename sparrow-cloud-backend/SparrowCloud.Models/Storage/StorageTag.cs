@@ -52,7 +52,7 @@ namespace SparrowCloud.Models.Storage
         /// <summary>
         /// 关联的文件集合（导航属性）
         /// </summary>
-        public List<StorageFileJoinTag> FileTags { get; set; } = new();
+        public List<StorageTagFile> FileTags { get; set; } = new();
     }
 
     public class StorageTagConfig : IEntityTypeConfiguration<StorageTag>

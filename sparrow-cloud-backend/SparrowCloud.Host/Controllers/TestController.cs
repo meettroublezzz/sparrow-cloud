@@ -2,8 +2,8 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
-using SparrowCloud.Models.Intermediate;
 using SparrowCloud.Models.Storage;
+using SparrowCloud.Models.Union;
 using SparrowCloud.Services;
 using SparrowCloud.Services.Storage;
 
@@ -15,12 +15,12 @@ namespace SparrowCloud.Host.Controllers
     {
         private readonly ILogger<ServiceBase> _logger;
 
-        private readonly IntermediateContext _dbInterm;
+        private readonly UnionContext _dbInterm;
 
         private readonly StorageManager _manager;
 
 
-        public TestController(ILogger<ServiceBase> logger, IntermediateContext dbInterm, StorageManager manager)
+        public TestController(ILogger<ServiceBase> logger, UnionContext dbInterm, StorageManager manager)
         {
             _logger = logger;
             _dbInterm = dbInterm;

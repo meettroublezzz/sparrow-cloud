@@ -12,7 +12,7 @@ namespace SparrowCloud.Models.Storage
     /// <summary>
     /// 文件&标签 中间表
     /// </summary>
-    public class StorageFileJoinTag : EntityIncr<long>
+    public class StorageTagFile : EntityIncr<long>
     {
         public long FileId { get; set; }
 
@@ -22,11 +22,11 @@ namespace SparrowCloud.Models.Storage
         public StorageFile File { get; set; }
     }
 
-    public class FileJoinTagConfig : IEntityTypeConfiguration<StorageFileJoinTag>
+    public class FileJoinTagConfig : IEntityTypeConfiguration<StorageTagFile>
     {
-        public void Configure(EntityTypeBuilder<StorageFileJoinTag> builder)
+        public void Configure(EntityTypeBuilder<StorageTagFile> builder)
         {
-            builder.ToTable("storage_file_join_tags");
+            builder.ToTable("storage_tags_files");
 
             builder
                 .HasOne(ft => ft.File)
