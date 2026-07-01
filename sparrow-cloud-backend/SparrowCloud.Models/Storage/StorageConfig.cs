@@ -18,7 +18,7 @@ namespace SparrowCloud.Models.Storage
         public string? ConfigValue { get; set; }
     }
 
-    public class StorageConfigConfig : IEntityTypeConfiguration<StorageConfig>
+    internal class StorageConfigConfig : IEntityTypeConfiguration<StorageConfig>
     {
         public void Configure(EntityTypeBuilder<StorageConfig> builder)
         {

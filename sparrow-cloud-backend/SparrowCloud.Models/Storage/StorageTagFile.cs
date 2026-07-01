@@ -22,7 +22,7 @@ namespace SparrowCloud.Models.Storage
         public StorageFile File { get; set; }
     }
 
-    public class FileJoinTagConfig : IEntityTypeConfiguration<StorageTagFile>
+    internal class FileJoinTagConfig : IEntityTypeConfiguration<StorageTagFile>
     {
         public void Configure(EntityTypeBuilder<StorageTagFile> builder)
         {

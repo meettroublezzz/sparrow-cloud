@@ -43,7 +43,7 @@ namespace SparrowCloud.Models.Storage
         public StorageFile MainFile { get; set; }
     }
 
-    public class StorageFileAggregateConfig : IEntityTypeConfiguration<StorageFileAggregate>
+    internal class StorageFileAggregateConfig : IEntityTypeConfiguration<StorageFileAggregate>
     {
         public void Configure(EntityTypeBuilder<StorageFileAggregate> builder)
         {

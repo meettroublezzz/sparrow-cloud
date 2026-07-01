@@ -164,7 +164,7 @@ namespace SparrowCloud.Models.Storage
         #endregion
     }
 
-    public class StorageFilesConfig : IEntityTypeConfiguration<StorageFile>
+    internal class StorageFilesConfig : IEntityTypeConfiguration<StorageFile>
     {
         public void Configure(EntityTypeBuilder<StorageFile> builder)
         {

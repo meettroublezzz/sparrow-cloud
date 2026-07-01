@@ -78,5 +78,25 @@ namespace SparrowCloud.Utils
             // 无扩展名返回空，有扩展名去掉.返回
             return string.IsNullOrEmpty(extension) ? string.Empty : extension.TrimStart('.');
         }
+
+        /// <summary>
+        /// 给目录追加 Hidden 隐藏属性（保留原有属性）
+        /// </summary>
+        /// <param name="dirPath">目录完整路径</param>
+        /// <param name="hidden">设置是否隐藏</param>
+        /// <exception cref="DirectoryNotFoundException">目录不存在抛出</exception>
+        public static void SetHidden(string dirPath, bool hidden = true)
+        {
+            if (!Directory.Exists(dirPath))
+                throw new DirectoryNotFoundException(dirPath);
+
+            var dir = new DirectoryInfo(dirPath);
+            dir.Attributes &= ~FileAttributes.ReadOnly;
+
+            if (hidden)
+                dir.Attributes |= FileAttributes.Hidden;
+            else
+                dir.Attributes &= ~FileAttributes.Hidden;
+        }
     }
 }

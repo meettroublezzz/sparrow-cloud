@@ -55,7 +55,7 @@ namespace SparrowCloud.Models.Storage
         public List<StorageTagFile> FileTags { get; set; } = new();
     }
 
-    public class StorageTagConfig : IEntityTypeConfiguration<StorageTag>
+    internal class StorageTagConfig : IEntityTypeConfiguration<StorageTag>
     {
         public void Configure(EntityTypeBuilder<StorageTag> builder)
         {

@@ -31,7 +31,7 @@ namespace SparrowCloud.Models.Storage
         public byte[]? BinaryData { get; set; }
     }
 
-    public class StorageBucketConfig : IEntityTypeConfiguration<StorageBucket>
+    internal class StorageBucketConfig : IEntityTypeConfiguration<StorageBucket>
     {
         public void Configure(EntityTypeBuilder<StorageBucket> builder)
         {

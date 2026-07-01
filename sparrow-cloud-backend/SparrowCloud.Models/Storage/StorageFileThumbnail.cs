@@ -47,7 +47,7 @@ namespace SparrowCloud.Models.Storage
 		public StorageFile StorageFile { get; set; }
 	}
 
-    public class StorageFileThumbnailConfig : IEntityTypeConfiguration<StorageFileThumbnail>
+    internal class StorageFileThumbnailConfig : IEntityTypeConfiguration<StorageFileThumbnail>
 	{
 		public void Configure(EntityTypeBuilder<StorageFileThumbnail> builder)
 		{
