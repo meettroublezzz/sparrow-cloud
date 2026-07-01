@@ -62,7 +62,7 @@ namespace SparrowCloud.Services.Storage
             public readonly long CreationTimeTicks { get; init; }
             public readonly long LastWriteTimeTicks { get; init; }
 
-            public readonly bool IsDeleted { get; init; }
+            //public readonly bool IsDeleted { get; init; }
             public readonly bool IsMissing { get; init; }
         }
 
@@ -142,7 +142,7 @@ namespace SparrowCloud.Services.Storage
         private async Task<IReadOnlyDictionary<(long PathHash, short PathLength), RecordComparison>> GetAllRecords(StorageContext db)
         {
             var query = db.StorageFiles
-                .Where(e => e.DeletedAt == null);
+                .Where(e => e.Recycled == null);
 
             int count = await query.CountAsync();
 
@@ -157,7 +157,7 @@ namespace SparrowCloud.Services.Storage
                     CreationTimeTicks = e.CreationTimeTicks,
                     LastWriteTimeTicks = e.LastWriteTimeTicks,
 
-                    IsDeleted = (e.DeletedAt != null),
+                    //IsDeleted = (e.Recycled != null),
                     IsMissing = (e.Missing != null),
                 })
                 .AsAsyncEnumerable();
@@ -173,7 +173,7 @@ namespace SparrowCloud.Services.Storage
                     CreationTimeTicks = record.CreationTimeTicks,
                     LastWriteTimeTicks = record.LastWriteTimeTicks,
 
-                    IsDeleted = record.IsDeleted,
+                    //IsDeleted = record.IsDeleted,
                     IsMissing = record.IsMissing,
                 });
             }
@@ -359,7 +359,7 @@ namespace SparrowCloud.Services.Storage
                 if (record.IsDeleted || record.IsMissing)
                 {
                     // 暂不处理
-                    Console.WriteLine($"反查遍历 -> 已缺失：{fileValue.Path}");
+                    Console.WriteLine($"反查遍历 -> 缺失找回：{fileValue.Path}");
 
                     // 下一条
                     continue;

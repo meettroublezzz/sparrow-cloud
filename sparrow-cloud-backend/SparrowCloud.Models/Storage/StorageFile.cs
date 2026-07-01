@@ -126,18 +126,18 @@ namespace SparrowCloud.Models.Storage
         #endregion
 
         /// <summary>
-        /// 删除时间（回收站，软删除；清空回收站则真实清理这些文件）
-        /// 原理：将要删除的 文件/目录 移动到数据仓库内
-        /// </summary>
-        public long? DeletedAt { get; set; }
-
-        /// <summary>
         /// 此文件缺失标志位
         /// 正常 = null
         /// </summary>
         public long? Missing { get; set; }
 
         #region 导航属性
+        /// <summary>
+        /// 文件是否被删除
+        /// 不为 null 表示在回收站里
+        /// </summary>
+        public virtual StorageFileRecycled? Recycled { get; set; }
+
         /// <summary>
         /// 外键：指向聚合体ID
         /// </summary>
@@ -195,7 +195,6 @@ namespace SparrowCloud.Models.Storage
             });
 
             builder.HasIndex(e => e.LastAccessTimeTicks);
-            builder.HasIndex(e => e.DeletedAt);
             builder.HasIndex(e => e.Missing);
         }
     }
