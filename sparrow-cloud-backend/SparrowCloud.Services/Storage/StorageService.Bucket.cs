@@ -22,6 +22,25 @@ namespace SparrowCloud.Services.Storage
         private const long BucketMaxLength = 8388608;
 
         /// <summary>
+        /// 计算桶文件实际路径
+        /// </summary>
+        /// <param name="bucketName"></param>
+        /// <param name="objectName"></param>
+        /// <returns></returns>
+        private string ComputeBucketFilePath(string bucketName, string objectName)
+        {
+            string filePath = Path.Combine(
+                _bucketWorkPath,
+                bucketName,
+                objectName[..2],    // 一级目录：第1、2位（索引 0、1）
+                objectName[2..4],   // 二级目录：第3、4位（索引 2、3）
+                objectName          // 完整文件名
+            );
+
+            return filePath;
+        }
+
+        /// <summary>
         /// 上传桶文件
         /// </summary>
         /// <param name="length"></param>
@@ -41,11 +60,11 @@ namespace SparrowCloud.Services.Storage
                 Id = default,
 
                 BucketName = bucketName,
-                ObjectName = $"{EntityBase.GenerateGuid()}{extension}",
+                ObjectName = $"{Guid.NewGuid():N}{extension}",
                 Extension = extension,
             };
 
-            string filePath = Path.Combine(_bucketWorkPath, bucket.BucketName, bucket.ObjectName[..2], $"{bucket.ObjectName}");
+            string filePath = ComputeBucketFilePath(bucket.BucketName, bucket.ObjectName);
 
             // 确保文件夹存在，后续要用
             Directory.CreateDirectory(Path.GetDirectoryName(filePath)!);
@@ -87,7 +106,7 @@ namespace SparrowCloud.Services.Storage
                 await db.SaveChangesAsync();
             }
 
-            return $"/buckets/{_metadata.StorageGuid}/{bucket.BucketName}/{bucket.ObjectName}";
+            return $"/storages/{_metadata.StorageGuid}/buckets/{bucket.BucketName}/{bucket.ObjectName}";
         }
 
         /// <summary>
@@ -118,7 +137,7 @@ namespace SparrowCloud.Services.Storage
             }
             else
             {
-                string filePath = Path.Combine(_bucketWorkPath, bucket.BucketName, bucket.ObjectName[..2], $"{bucket.ObjectName}");
+                string filePath = ComputeBucketFilePath(bucket.BucketName, bucket.ObjectName);
 
                 stream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
             }
@@ -146,7 +165,7 @@ namespace SparrowCloud.Services.Storage
                 if (rows == 0)
                     throw new ServiceException("桶文件不存在", 404);
 
-                string filePath = Path.Combine(_bucketWorkPath, bucketName, objectName[..2], $"{objectName}");
+                string filePath = ComputeBucketFilePath(bucketName, objectName);
 
                 File.Delete(filePath);
 

@@ -7,7 +7,7 @@ using SparrowCloud.Services.Storage;
 
 namespace SparrowCloud.Host.Controllers
 {
-    [Route("buckets")]
+    [Route("storages/{storageId}/buckets")]
     [ApiController]
     public class BucketsController : ControllerBase
     {
@@ -27,11 +27,10 @@ namespace SparrowCloud.Host.Controllers
         /// <summary>
         /// 桶文件上传
         /// </summary>
-        /// <param name="storageId"></param>
         /// <param name="bucketName"></param>
         /// <param name="file"></param>
         /// <returns></returns>
-        [HttpPost("{storageId}/{bucketName}")]
+        [HttpPost("{bucketName}")]
         public async Task<IActionResult> UploadAsync([FromRoute] string storageId, [FromRoute] string bucketName, IFormFile file)
         {
             try
@@ -56,11 +55,10 @@ namespace SparrowCloud.Host.Controllers
         /// <summary>
         /// 桶文件下载
         /// </summary>
-        /// <param name="storageId"></param>
         /// <param name="bucketName"></param>
         /// <param name="file"></param>
         /// <returns></returns>
-        [HttpGet("{storageId}/{bucketName}/{objectName}")]
+        [HttpGet("{bucketName}/{objectName}")]
         public async Task<IActionResult> DownAsync([FromRoute] string storageId, [FromRoute] string bucketName, [FromRoute] string objectName)
         {
             try
@@ -82,11 +80,10 @@ namespace SparrowCloud.Host.Controllers
         /// <summary>
         /// 桶文件删除
         /// </summary>
-        /// <param name="storageId"></param>
         /// <param name="bucketName"></param>
         /// <param name="objectName"></param>
         /// <returns></returns>
-        [HttpDelete("{storageId}/{bucketName}/{objectName}")]
+        [HttpDelete("{bucketName}/{objectName}")]
         public async Task<IActionResult> DelAsync([FromRoute] string storageId, [FromRoute] string bucketName, [FromRoute] string objectName)
         {
             try
