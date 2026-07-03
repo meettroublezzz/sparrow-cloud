@@ -5,7 +5,7 @@ using SparrowCloud.Models.Union;
 using SparrowCloud.Services;
 using SparrowCloud.Services.Storage;
 
-namespace SparrowCloud.Host.Controllers
+namespace SparrowCloud.Host.Controllers.Vanilla
 {
     [Route("storages/{storageId}/buckets")]
     [ApiController]
