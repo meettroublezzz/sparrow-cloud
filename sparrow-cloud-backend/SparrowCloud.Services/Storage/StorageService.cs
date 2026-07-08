@@ -18,7 +18,7 @@ namespace SparrowCloud.Services.Storage
         /// <summary>
         /// 文件库 主数据库 文件名
         /// </summary>
-        public const string StorageSqliteFileName = @"StorageSqlite.db";
+        public const string StorageSqliteFileName = @"SparrowStorage.db";
 
         /// <summary>
         /// 文件库 回收站目录名称

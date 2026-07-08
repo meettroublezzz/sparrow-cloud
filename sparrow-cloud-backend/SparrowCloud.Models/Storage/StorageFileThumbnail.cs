@@ -19,21 +19,25 @@ namespace SparrowCloud.Models.Storage
         /// <summary>
         /// 小图 桶存储引用 (64*64)
         /// </summary>
+        [StringLength(4095)]
         public required string SmallInBucket { get; set; }
 
         /// <summary>
         /// 中图 桶存储引用 (128*128)
         /// </summary>
+        [StringLength(4095)]
         public required string MediumInBucket { get; set; }
 
         /// <summary>
         /// 大图 桶存储引用 (256*256)
         /// </summary>
+        [StringLength(4095)]
         public required string LargeInBucket { get; set; }
 
         /// <summary>
         /// 封面 桶存储引用 (用户自定义)
         /// </summary>
+        [StringLength(4095)]
         public string? CoverInBucket { get; set; }
 
         /// <summary>

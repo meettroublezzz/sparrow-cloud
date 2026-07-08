@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -19,21 +20,25 @@ namespace SparrowCloud.Models.Union
         /// <summary>
         /// 文件库名称（任意修改）
         /// </summary>
+        [StringLength(255)]
         public required string Name { get; set; }
 
         /// <summary>
         /// 用户表（外键）
         /// </summary>
+        [StringLength(36)]
         public required string UserId { get; set; }
 
         /// <summary>
         /// 文件库（外键）
         /// </summary>
+        [StringLength(36)]
         public required string StorageId { get; set; }
 
         /// <summary>
         /// 实际路径
         /// </summary>
+        [StringLength(4095)]
         public required string RootPath { get; set; }
 
         /// <summary>
@@ -57,6 +62,7 @@ namespace SparrowCloud.Models.Union
         /// 文件库损坏（理由）
         /// 正常 = null
         /// </summary>
+        [StringLength(65535)]
         public string? Damaged { get; set; }
     }
 

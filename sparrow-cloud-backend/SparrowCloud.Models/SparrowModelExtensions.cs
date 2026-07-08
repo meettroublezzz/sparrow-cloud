@@ -22,7 +22,7 @@ namespace SparrowCloud.Models
                 // 读取连接字符串
                 string path = configuration["SparrowConfigs:MainPath"]!;
                 // 数据库文件路径
-                path = Path.Combine(path, @"SparrowUnionSqlite.db");
+                path = Path.Combine(path, @"SparrowUnion.db");
 
                 options.UseSqlite($"Data Source={path}; Cache=Shared;");
             });
