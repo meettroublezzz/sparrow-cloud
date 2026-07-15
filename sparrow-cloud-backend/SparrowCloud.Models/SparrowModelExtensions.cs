@@ -17,14 +17,18 @@ namespace SparrowCloud.Models
         /// <returns></returns>
         public static IServiceCollection AddSparrowModels(this IServiceCollection services, IConfiguration configuration)
         {
+            // 读取连接字符串
+            string path = configuration["SparrowCloud:DefaultPath"]!;
+            // 数据库文件路径
+            path = Path.Combine(path, @"__SparrowCloud_Data__");
+            // 幂等的自动创建所有不存在的文件夹
+            Directory.CreateDirectory(path);
+
+            string filePath = Path.Combine(path, @"SparrowUnion.db");
+
             services.AddDbContext<UnionContext>(options =>
             {
-                // 读取连接字符串
-                string path = configuration["SparrowConfigs:MainPath"]!;
-                // 数据库文件路径
-                path = Path.Combine(path, @"SparrowUnion.db");
-
-                options.UseSqlite($"Data Source={path}; Cache=Shared;");
+                options.UseSqlite($"Data Source={filePath}; Cache=Shared;");
             });
 
             return services;
