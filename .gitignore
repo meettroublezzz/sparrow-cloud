@@ -10,6 +10,8 @@ Desktop.ini
 # 后端 配置
 bin/
 obj/
+# 忽略配置（方便在本地修改）
+sparrow-cloud-backend/SparrowCloud.Host/appsettings.json
 
 # 辅助文件
 packages/
