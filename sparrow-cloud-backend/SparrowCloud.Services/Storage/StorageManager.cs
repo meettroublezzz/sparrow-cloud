@@ -20,7 +20,7 @@ namespace SparrowCloud.Services.Storage
         /// <summary>
         /// 数据仓库名称
         /// </summary>
-        public const string StandaloneDirectoryName = @"__SparrowCloud__DWH__Standalone__";
+        public const string StandaloneDirectoryName = @".__SparrowCloud__DWH__Standalone__";
 
         /// <summary>
         /// 元数据文件名

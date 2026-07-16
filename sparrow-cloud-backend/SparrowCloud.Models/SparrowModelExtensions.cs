@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using SparrowCloud.Models.Union;
+using SparrowCloud.Utils;
 
 namespace SparrowCloud.Models
 {
@@ -20,9 +21,11 @@ namespace SparrowCloud.Models
             // 读取连接字符串
             string path = configuration["SparrowCloud:DefaultPath"]!;
             // 数据库文件路径
-            path = Path.Combine(path, @"__SparrowCloud_Data__");
+            path = Path.Combine(path, @".__SparrowCloud_Data__");
             // 幂等的自动创建所有不存在的文件夹
             Directory.CreateDirectory(path);
+
+            PathHelper.SetHidden(path);
 
             string filePath = Path.Combine(path, @"SparrowUnion.db");
 

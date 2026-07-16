@@ -72,26 +72,30 @@ namespace SparrowCloud.Services.Storage
         {
             _metadata = metadata;
 
+            #region 路径初始化
             _rootPath = Path.TrimEndingDirectorySeparator(path);
-
             _basePath = Path.Combine(_rootPath, StorageManager.StandaloneDirectoryName);
-
             _workPath = Path.Combine(_rootPath, StorageManager.StandaloneDirectoryName, StorageManager.SparrowCloudName);
 
             _recycledWorkPath = Path.Combine(_workPath, StorageRecycledName);
             _bucketWorkPath = Path.Combine(_workPath, StorageBucketName);
             _tempWorkPath = Path.Combine(_workPath, StorageTempName);
+            #endregion
 
-            /* 确保文件夹存在 */
+            #region 确保文件夹存在
             Directory.CreateDirectory(_workPath);
 
             Directory.CreateDirectory(_recycledWorkPath);
             Directory.CreateDirectory(_bucketWorkPath);
-
             Directory.CreateDirectory(_tempWorkPath);
+            #endregion
+
+            #region 设置隐藏
+            PathHelper.SetHidden(_basePath);
             PathHelper.SetHidden(_tempWorkPath);
+            #endregion
         }
-        
+
         /// <summary>
         /// 获取数据库上下文
         /// </summary>
