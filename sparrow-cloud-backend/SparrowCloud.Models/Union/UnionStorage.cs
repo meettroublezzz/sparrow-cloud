@@ -66,7 +66,7 @@ namespace SparrowCloud.Models.Union
         public string? Damaged { get; set; }
     }
 
-    internal class StorageFilesConfig : IEntityTypeConfiguration<UnionStorage>
+    internal class UnionStorageConfig : IEntityTypeConfiguration<UnionStorage>
     {
         public void Configure(EntityTypeBuilder<UnionStorage> builder)
         {

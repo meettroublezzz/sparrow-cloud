@@ -1,18 +1,13 @@
-﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SparrowCloud.Models.Union
+namespace SparrowCloud.Contracts.MountModels
 {
-    /// <summary>
-    /// 挂载点
-    /// </summary>
-    public class UnionMount : EntityIncr<int>
+    public class MountAddReq
     {
         /// <summary>
         /// 挂载点名称
@@ -31,13 +26,16 @@ namespace SparrowCloud.Models.Union
         /// </summary>
         [StringLength(4095)]
         public required string Describe { get; set; }
-    }
 
-    internal class UnionMountConfig : IEntityTypeConfiguration<UnionMount>
-    {
-        public void Configure(EntityTypeBuilder<UnionMount> builder)
+        /// <summary>
+        /// 将Path路径标准化处理
+        /// </summary>
+        public void NormalizePath()
         {
-            builder.ToTable("union_mounts");
+            if (string.IsNullOrWhiteSpace(Path))
+                throw new ArgumentNullException(nameof(Path));
+
+            Path = System.IO.Path.GetFullPath(Path);
         }
     }
 }

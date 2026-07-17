@@ -18,7 +18,7 @@ namespace SparrowCloud.Models
         /// <returns></returns>
         public static IServiceCollection AddSparrowModels(this IServiceCollection services, IConfiguration configuration)
         {
-            // 读取连接字符串
+            // 读取默认路径
             string path = configuration["SparrowCloud:DefaultPath"]!;
             // 数据库文件路径
             path = Path.Combine(path, @".__SparrowCloud_Data__");

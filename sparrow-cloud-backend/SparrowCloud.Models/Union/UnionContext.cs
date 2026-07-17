@@ -35,5 +35,7 @@ namespace SparrowCloud.Models.Union
         }
 
         public DbSet<UnionStorage> UnionStorages { get; set; }
+        
+        public DbSet<UnionMount> UnionMounts { get; set; }
     }
 }

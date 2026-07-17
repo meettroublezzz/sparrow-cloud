@@ -29,11 +29,7 @@ namespace SparrowCloud.Services
 
             foreach (var type in types)
             {
-                services.Add(new ServiceDescriptor(
-                    serviceType: typeof(ServiceBase),
-                    implementationType: type,
-                    lifetime: ServiceLifetime.Scoped
-                ));
+                services.AddScoped(type);
             }
         }
 
