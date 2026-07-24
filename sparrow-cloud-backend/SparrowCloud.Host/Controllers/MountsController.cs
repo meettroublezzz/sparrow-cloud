@@ -28,19 +28,35 @@ namespace SparrowCloud.Host.Controllers
         }
 
         [HttpGet("metadata")]
-        public async Task<BaseResponse<MetadataModel>> GetMetadataAsync([FromForm] string? path)
+        public async Task<BaseResponse<dynamic>> GetMetadataAsync([FromQuery] MetadataReq.MetadataType action, [FromForm] string? rootPath)
         {
             try
             {
-                var result = _mountService.GetMetadata(path);
+                dynamic result;
 
-                return BaseResponse<MetadataModel>.Success(result);
+                switch (action)
+                {
+                    case MetadataReq.MetadataType.Entry:
+                        result = MountService.GetDirectoryEntry();
+                        break;
+
+                    case MetadataReq.MetadataType.Tree:
+                        if (string.IsNullOrWhiteSpace(rootPath))
+                            throw new ArgumentException("rootPath 值不能为空");
+                        result = MountService.GetDirectoryTree(rootPath);
+                        break;
+
+                    default:
+                        throw new NotImplementedException();
+                }
+
+                return BaseResponse<dynamic>.Success(result);
             }
             catch (ServiceException se)
             {
                 _logger.LogWarning(se, "查询元数据：");
 
-                return BaseResponse<MetadataModel>.Fail(se.Code, se.Message);
+                return BaseResponse<dynamic>.Fail(se.Code, se.Message);
             }
         }
 

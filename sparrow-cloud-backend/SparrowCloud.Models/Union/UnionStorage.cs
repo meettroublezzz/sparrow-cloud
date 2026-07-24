@@ -64,6 +64,23 @@ namespace SparrowCloud.Models.Union
         /// </summary>
         [StringLength(65535)]
         public string? Damaged { get; set; }
+
+        /// <summary>
+        /// 是否被删除（软删除）
+        /// 未删除 = null
+        /// </summary>
+        public DateTime? DeletedAt { get; set; }
+
+        /// <summary>
+        /// 最后访问时间
+        /// </summary>
+        public DateTime? LastAccessAt { get; set; }
+
+        /// <summary>
+        /// 文件库描述（简短的）
+        /// </summary>
+        [StringLength(511)]
+        public required string Describe { get; set; }
     }
 
     internal class UnionStorageConfig : IEntityTypeConfiguration<UnionStorage>
@@ -81,6 +98,8 @@ namespace SparrowCloud.Models.Union
             builder.HasIndex(e => e.UserId);
             builder.HasIndex(e => e.StorageId);
             builder.HasIndex(e => e.Sequence);
+
+            builder.HasIndex(e => e.DeletedAt);
         }
     }
 }

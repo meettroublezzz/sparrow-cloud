@@ -185,7 +185,7 @@ namespace SparrowCloud.Utils
         /// <summary>
         /// 检查目录是否具有完全控制权限（创建、写入、读取、删除文件）
         /// </summary>
-        private static bool CheckFullControl(string directoryPath)
+        public static bool CheckFullControl(string directoryPath)
         {
             try
             {

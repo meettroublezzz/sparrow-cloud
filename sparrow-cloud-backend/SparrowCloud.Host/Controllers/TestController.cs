@@ -28,29 +28,7 @@ namespace SparrowCloud.Host.Controllers
         }
 
         public const string UserId = "zyq";
-
-        [HttpGet]
-        public async Task<dynamic> Test()
-        {
-            var dataset = await _manager.QueryStorageAsync(UserId);
-
-            return new
-            {
-                dataset,
-            };
-        }
-
-        [HttpPost]
-        public async Task<dynamic> Testa([FromForm] string path)
-        {
-            return await _manager.CreateOrAttachAsync(UserId, UserId, path);
-        }
-
-        [HttpDelete]
-        public async Task Del([FromForm] string id)
-        {
-            await _manager.RemoveStorageAsync(UserId, id);
-        }
+        public const string Nickname = "zzZ";
 
         [HttpDelete("DeleteFileByIdAsync")]
         public async Task DeleteFileByIdAsync([FromForm] string storageId, [FromForm] long fileId)

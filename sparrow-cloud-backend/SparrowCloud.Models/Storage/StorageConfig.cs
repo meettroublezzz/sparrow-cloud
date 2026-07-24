@@ -32,19 +32,27 @@ namespace SparrowCloud.Models.Storage
             builder.HasIndex(x => x.ConfigKey).IsUnique();
 
             builder.HasData(
-                new StorageConfig
+                new()
                 {
                     Id = 1,
 
                     ConfigKey = "storage_info",
                 },
 
-                new StorageConfig
+                new()
                 {
                     Id = 2,
 
                     ConfigKey = "storage_tags",
                     ConfigValue = "[]",
+                },
+
+                new()
+                {
+                    Id = 3,
+
+                    ConfigKey = "storage_cover_url",
+                    ConfigValue= null,
                 }
              );
         }

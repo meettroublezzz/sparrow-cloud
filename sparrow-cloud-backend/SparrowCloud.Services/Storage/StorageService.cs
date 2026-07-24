@@ -66,8 +66,6 @@ namespace SparrowCloud.Services.Storage
         /// </summary>
         private readonly string _tempWorkPath;
 
-        
-
         public StorageService(string path, StorageMetadata metadata)
         {
             _metadata = metadata;
@@ -94,13 +92,20 @@ namespace SparrowCloud.Services.Storage
             PathHelper.SetHidden(_basePath);
             PathHelper.SetHidden(_tempWorkPath);
             #endregion
+
+            #region 自动建库建表
+            using (var db = GetStorageContext())
+            {
+                db.Database.EnsureCreated();
+            }
+            #endregion
         }
 
         /// <summary>
         /// 获取数据库上下文
         /// </summary>
         /// <returns></returns>
-        public StorageContext GetStorageContext()
+        internal StorageContext GetStorageContext()
         {
             string filePath = Path.Combine(_workPath, StorageSqliteFileName);
 
@@ -110,6 +115,29 @@ namespace SparrowCloud.Services.Storage
 
             return new StorageContext(options);
         }
+
+        private static StorageConfig[]? configsCache = null;
+        /// <summary>
+        /// 根据key获取配置项
+        /// </summary>
+        /// <param name="key"></param>
+        /// <returns></returns>
+        internal async Task<StorageConfig> GetConfigItemByKey(string key)
+        {
+            if (configsCache == null)
+            {
+                using (var db = GetStorageContext())
+                {
+                    configsCache = await db.StorageConfigs
+                        .AsNoTracking()
+                        .ToArrayAsync();
+                }
+            }
+            
+            return configsCache.Single(e => e.ConfigKey == key);
+        }
+
+        public StorageMetadata Metadata { get => _metadata; }
 
         public string RootPath { get => _rootPath; }
         public string BasePath { get => _basePath; }

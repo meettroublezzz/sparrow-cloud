@@ -133,6 +133,8 @@ namespace SparrowCloud.Models
         /// </summary>
 
         public long? FavoritedAt { get; set; } = null;
+        [NotMapped]
+        public DateTime? FavoritedTime { get => FavoritedAt == null ? null : new DateTime((long)FavoritedAt); }
 
         /// <summary>
         /// 星级（满十分）半星=1分

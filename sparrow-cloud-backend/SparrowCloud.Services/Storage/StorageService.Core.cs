@@ -89,13 +89,8 @@ namespace SparrowCloud.Services.Storage
              *      PS：注意回收站问题，因为移动了，所以没有实际文件；需要先排除已删除的，再单独处理已删除的。
              */
 
-            stopwatch.Restart();
             // 获取数据库上下文
             using StorageContext db = GetStorageContext();
-            // 自动建库建表
-            db.Database.EnsureCreated();
-            stopwatch.Stop();
-            Console.WriteLine($"自动建库建表 Elapsed={stopwatch.Elapsed}");
 
             #region  批量操作优化
             // 关闭自动变更检测

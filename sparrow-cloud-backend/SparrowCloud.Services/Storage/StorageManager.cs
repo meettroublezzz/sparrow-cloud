@@ -1,16 +1,13 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Codeuctivity;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using NetTopologySuite.Index.HPRtree;
 using Newtonsoft.Json;
+using SparrowCloud.Contracts.StorageModels;
 using SparrowCloud.Models;
 using SparrowCloud.Models.Union;
-using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Linq;
-using System.Security.Cryptography;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace SparrowCloud.Services.Storage
 {
@@ -55,15 +52,18 @@ namespace SparrowCloud.Services.Storage
         /// <summary>
         /// 初始化文件库管理器
         /// </summary>
-        public static async Task InitAsync(UnionContext db)
+        public static async Task InitAsync(UnionContext db, UnionStorage[]? dataset = null)
         {
             /*
              * 从数据库读取当前所有挂载的文件库，初始化管理器；
              */
 
-            var dataset = db.UnionStorages
-                    .Where(e => e.Missing == null && e.Damaged == null)
+            if (dataset == null)
+            {
+                dataset = db.UnionStorages
+                    .Where(e => e.DeletedAt == null && e.Missing == null && e.Damaged == null)
                     .ToArray();
+            }
 
             foreach (var item in dataset)
             {
@@ -103,44 +103,94 @@ namespace SparrowCloud.Services.Storage
                 // 读取元数据
                 var metadata = JsonConvert.DeserializeObject<StorageMetadata>(File.ReadAllText(metadataPath))!;
 
+                string key = $"{item.UserId}+{metadata.StorageGuid}";
+
                 // 实例化文件库
                 StorageService storage = new(rootPath, metadata);
 
-                _storages.TryAdd($"{item.UserId}+{metadata.StorageGuid}", storage);
+                _storages.TryAdd(key, storage);
             }
 
             db.SaveChanges();
         }
 
         /// <summary>
+        /// 实体转DTO
+        /// </summary>
+        /// <param name="entity"></param>
+        /// <returns></returns>
+        private static async Task<StorageModel> ConvertToModel(string uid, UnionStorage entity)
+        {
+            string key = $"{uid}+{entity.StorageId}";
+
+            // 是否就绪
+            string? know = null;
+
+            BaseInfoModel? info = null;
+            StorageMetadata? metadata = null;
+            long size = -1;
+
+            if (_storages.TryGetValue(key, out var storage))
+            {
+                info = await storage.GetStorageBaseInfoAsync(entity);
+                size = await storage.GetStorageSizeAsync();
+                metadata = storage.Metadata;
+            }
+            else
+            {
+                know = "--???--";
+            }
+
+            return new()
+            {
+                StorageId = entity.StorageId,
+                Sequence = entity.Sequence,
+
+                CoverUrl = know != null ? know! : info!.CoverUrl!,
+                Name = entity.Name,
+                DirName = Path.GetFileName(entity.RootPath)!,
+                FullPath = entity.RootPath,
+
+                Missing = entity.Missing,
+                LastScan = entity.LastScan,
+                Damaged = entity.Damaged,
+
+                CreatedAt = entity.CreateTime,
+                UpdatedAt = entity.UpdateTime,
+                LastAccessAt = entity.LastAccessAt,
+
+                DeletedAt = entity.DeletedAt,
+
+                Size = size,
+                Describe = entity.Describe,
+                Birthday = know != null ? default : metadata!.CreateAt,
+
+                Ready = know == null,
+            };
+        }
+
+        /// <summary>
         /// 查询文件库信息
         /// </summary>
         /// <returns></returns>
-        public async Task<IEnumerable<dynamic>> QueryStorageAsync(string uid)
+        public async Task<IEnumerable<StorageModel>> QueryStorageAsync(string uid)
         {
-            string[] storageIdArray = _storages.Keys
-                .Where(e => e.StartsWith($"{uid}"))
-                .Select(e => e.Split('+')[1])
-                .ToArray();
+            List<StorageModel> result = new();
 
-            return await _db.UnionStorages
+            var dataset = await _db.UnionStorages
+                .AsNoTracking()
                 .Where(e => e.UserId == uid)
                 .OrderByDescending(e => e.Sequence)
-                .Select(e => new
-                {
-                    Id = e.StorageId,
-                    e.Name,
-
-                    ready = storageIdArray.Contains(e.StorageId),
-
-                    e.RootPath,
-                    e.CreateAt,
-                    e.Missing,
-                    e.Damaged,
-                    e.Sequence,
-                    e.LastScan,
-                })
                 .ToArrayAsync();
+
+            foreach (var storage in dataset)
+            {
+                var tmp = await ConvertToModel(uid, storage);
+
+                result.Add(tmp);
+            }
+
+            return result;
         }
 
         /// <summary>
@@ -160,14 +210,12 @@ namespace SparrowCloud.Services.Storage
         /// 创建或附加一个文件库
         /// </summary>
         /// <returns></returns>
-        public async Task<string> CreateOrAttachAsync(string uid, string creator, string path)
+        public async Task<UnionStorage> CreateOrAttachAsync(string uid, string creator, string name, string desc, string path)
         {
             string rootPath = Path.TrimEndingDirectorySeparator(path);
 
             if (!Directory.Exists(rootPath))
                 throw new ServiceException("此文件库路径实际不存在！", 404);
-
-            string name = Path.GetFileName(rootPath);
 
             // 此文件库是否已在数据库内
             bool any = await _db.UnionStorages.AnyAsync(e => e.UserId == uid && e.RootPath == rootPath);
@@ -199,6 +247,7 @@ namespace SparrowCloud.Services.Storage
             {
                 Id = default,
                 Name = name,
+                Describe = desc,
 
                 UserId = uid,
                 StorageId = metadata.StorageGuid,
@@ -212,12 +261,75 @@ namespace SparrowCloud.Services.Storage
             _db.UnionStorages.Add(model);
             _db.SaveChanges();
 
-            // 实例化文件库
-            StorageService storage = new(rootPath, metadata);
+            #region 尝试激活文件库，使其就绪
+            await InitAsync(_db, [model]);
 
-            _storages.TryAdd($"{uid}+{metadata.StorageGuid}", storage);
+            string key = $"{model.UserId}+{model.StorageId}";
 
-            return model.StorageId;
+            if (!_storages.TryGetValue(key, out var storage))
+                throw new ServiceException("文件库未就绪，请检查状态", 10);
+            #endregion
+
+            return model;
+        }
+
+        /// <summary>
+        /// 创建文件库
+        /// </summary>
+        /// <param name="uid"></param>
+        /// <param name="req"></param>
+        /// <returns></returns>
+        public async Task<StorageModel> CreateStorageAsync(string uid, string creator, StorageAddReq req)
+        {
+            /*
+             * 创建文件库
+             *      可能从挂载点路径出发，需要根据 UID/文件库名称 得到实际目录路径，
+             *      如果前端没有传递 DirName 则依赖Name值（并处理名称合法性问题）
+             */
+
+            string dirName = string.IsNullOrWhiteSpace(req.DirName) ? req.Name : req.DirName;
+
+            // 处理为合法性目录名称
+            dirName = dirName.SanitizeFilename();
+
+            string fullPath = Path.Combine(req.FullPath, uid, dirName);
+
+            if (Directory.Exists(fullPath))
+                throw new ServiceException($"该路径下已存在名为'{dirName}'的目录，无法创建！", 409);
+
+            Directory.CreateDirectory(fullPath);
+
+            var model = await CreateOrAttachAsync(uid, creator, req.Name, req.Describe, fullPath);
+
+            return await ConvertToModel(uid, model);
+        }
+        
+        /// <summary>
+        /// 附加文件库
+        /// </summary>
+        /// <param name="uid"></param>
+        /// <param name="creator"></param>
+        /// <param name="req"></param>
+        /// <returns></returns>
+        public async Task<StorageModel> AttachStorageAsync(string uid, string creator, StorageAddReq req)
+        {
+            /*
+             * 前端必须传递 FullPath
+             *      直接根据 FullPath 附加文件库即可，不一定需要存在数据仓库
+             *          如果存在数据仓库则视为标准文件库，尝试附加；
+             *          如果不存在则视为普通目录，初始化数据仓库后附加；
+             */
+
+            string fullPath = req.FullPath;
+
+            string dirName = Path.GetFileName(fullPath)!;
+
+            if (!Directory.Exists(fullPath))
+                throw new ServiceException($"该路径下不存在名为'{dirName}'的目录，无法附加！", 404);
+
+            var model = await CreateOrAttachAsync(uid, creator, req.Name, req.Describe, fullPath);
+
+            return await ConvertToModel(uid, model);
         }
 
         /// <summary>
@@ -278,24 +390,96 @@ namespace SparrowCloud.Services.Storage
 
             return metadata;
         }
-    
+
         /// <summary>
-        /// 移除某个文件库（并不会删除实际目录或文件）
+        /// 修改文件库信息
         /// </summary>
         /// <param name="uid"></param>
-        /// <param name="id"></param>
+        /// <param name="req"></param>
         /// <returns></returns>
-        public async Task RemoveStorageAsync(string uid, string storageId)
+        public async Task<StorageModel> EditStorageAsync(string uid, string storageId, StorageEditReq req)
         {
-            UnionStorage record = await _db.UnionStorages.SingleAsync(e => e.UserId == uid && e.StorageId == storageId);
+            var record = await _db.UnionStorages
+                .Where(e => e.UserId == uid && e.StorageId == storageId)
+                .SingleAsync();
 
-            _db.UnionStorages.Remove(record);
+            record.Name = req.Name;
+            record.Describe = req.Describe;
+            record.UpdateAt = EntityBase.NowTicks;
+
+            await _db.SaveChangesAsync();
+
+            return await ConvertToModel(uid, record);
+        }
+
+        /// <summary>
+        /// 移除 or 删除 文件库（不会删除实际目录或文件）
+        /// </summary>
+        /// <param name="uid"></param>
+        /// <param name="storageId"></param>
+        /// <param name="isDelete"></param>
+        /// <returns></returns>
+        public async Task RemoveOrDeleteStorageAsync(string uid, string storageId, bool isDelete = false)
+        {
+            var record = await _db.UnionStorages
+                .Where(e => e.UserId == uid && e.StorageId == storageId)
+                .SingleAsync();
+
+            if (isDelete)
+            {
+                _db.UnionStorages.Remove(record);
+            }
+            else
+            {
+                record.DeletedAt = DateTime.Now;
+                record.LastScan = null;
+                record.Missing = null;
+                record.Damaged = null;
+            }
             
             await _db.SaveChangesAsync();
 
-            _storages.Remove($"{uid}+{record.StorageId}", out _);
+            _storages.Remove($"{uid}+{storageId}", out _);
         }
         
+        /// <summary>
+        /// 修改文件库状态
+        /// </summary>
+        /// <param name="uid"></param>
+        /// <param name="storageId"></param>
+        /// <returns></returns>
+        public async Task<StorageModel> PatchStorageAsync(string uid, string storageId, bool? remove = null)
+        {
+            var record = await _db.UnionStorages
+                .Where(e => e.UserId == uid && e.StorageId == storageId)
+                .SingleAsync();
+
+            // 取消移除状态
+            if (remove != null && !((bool)remove))
+            {
+                record.DeletedAt = null;
+                record.UpdateAt = EntityBase.NowTicks;
+            }
+
+            await _db.SaveChangesAsync();
+
+            #region 尝试激活文件库，使其就绪
+            string key = $"{record.UserId}+{record.StorageId}";
+
+            if (!_storages.ContainsKey(key) && record.DeletedAt == null)
+            {
+                _logger.LogDebug("修改状态后 -> 尝试激活文件库，使其就绪");
+
+                await InitAsync(_db, [record]);
+
+                if (!_storages.TryGetValue(key, out var storage))
+                    throw new ServiceException("文件库未就绪，请检查状态", 10);
+            }
+            #endregion
+
+            return await ConvertToModel(uid, record);
+        }
+
         /// <summary>
         /// 获取文件库对象
         /// </summary>

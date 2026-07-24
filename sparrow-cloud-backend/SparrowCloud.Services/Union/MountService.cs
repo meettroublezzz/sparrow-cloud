@@ -65,7 +65,7 @@ namespace SparrowCloud.Services.Union
         }
 
         /// <summary>
-        /// 查询默认挂载点
+        /// 查询挂载点
         /// </summary>
         /// <returns></returns>
         public async Task<IEnumerable<MountModel>> QueryMountsAsync()
@@ -97,6 +97,10 @@ namespace SparrowCloud.Services.Union
 
             if (!Path.Exists(req.Path))
                 throw new ServiceException("该挂载点路径对应的目录不存在", 404);
+
+            // 是否有完整权限
+            if(!DirectoryHelper.CheckFullControl(req.Path))
+                throw new ServiceException("麻雀云盘不具备该路径的完整访问权限", 403);
 
             UnionMount mount = new()
             {
@@ -132,7 +136,7 @@ namespace SparrowCloud.Services.Union
             var mount = await _dbUnion.UnionMounts.FindAsync(mountId);
 
             if (mount == null)
-                throw new ServiceException("挂载点ID不存在，请检查");
+                throw new ServiceException("挂载点ID不存在，请检查", 404);
 
             mount.Name = req.Name;
             mount.Path = req.Path;
@@ -160,28 +164,21 @@ namespace SparrowCloud.Services.Union
         }
 
         /// <summary>
-        /// 查询元数据
+        /// 查询用户常见目录及权限
         /// </summary>
-        /// <param name="path">要查询的路径（为null时，仅查询目录条目）</param>
         /// <returns></returns>
-        public MetadataModel GetMetadata(string? path)
+        public static IEnumerable<DirectoryEntry> GetDirectoryEntry()
         {
-            MetadataModel result = new();
-
-            if (string.IsNullOrEmpty(path))
-            {
-                var entry = DirectoryHelper.GetUserDirectories();
-
-                result.Entry = entry;
-            }
-            else
-            {
-                var nodes = DirectoryHelper.GetDirectoryTree(path);
-
-                result.Tree = nodes;
-            }
-
-            return result;
+            return DirectoryHelper.GetUserDirectories();
+        }
+        /// <summary>
+        /// 查询某路径下的目录树
+        /// </summary>
+        /// <param name="rootPath"></param>
+        /// <returns></returns>
+        public static IEnumerable<DirectoryTreeNode> GetDirectoryTree(string rootPath)
+        {
+            return DirectoryHelper.GetDirectoryTree(rootPath);
         }
     }
 }
