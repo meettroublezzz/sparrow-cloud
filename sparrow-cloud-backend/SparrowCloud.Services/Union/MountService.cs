@@ -178,7 +178,7 @@ namespace SparrowCloud.Services.Union
         /// <returns></returns>
         public static IEnumerable<DirectoryTreeNode> GetDirectoryTree(string rootPath)
         {
-            return DirectoryHelper.GetDirectoryTree(rootPath);
+            return DirectoryHelper.GetDirectoryTree(rootPath, true);
         }
     }
 }

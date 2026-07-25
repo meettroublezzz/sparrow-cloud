@@ -15,7 +15,7 @@ namespace SparrowCloud.Utils
         /// </summary>
         /// <param name="rootPath">根目录物理路径</param>
         /// <param name="directOnly">true: 仅返回直接子目录；false: 递归返回全部子目录</param>
-        public static List<DirectoryTreeNode> GetDirectoryTree(string rootPath, bool directOnly = false)
+        public static List<DirectoryTreeNode> GetDirectoryTree(string rootPath, bool directOnly = false, bool showHide = false)
         {
             if (string.IsNullOrWhiteSpace(rootPath))
                 throw new ArgumentException("路径不能为空", nameof(rootPath));
@@ -45,6 +45,9 @@ namespace SparrowCloud.Utils
 
                     foreach (var subDir in subDirs)
                     {
+                        if (subDir.Name.StartsWith('.') && !showHide)
+                            continue;
+
                         var childNode = new DirectoryTreeNode
                         {
                             Label = subDir.Name,
