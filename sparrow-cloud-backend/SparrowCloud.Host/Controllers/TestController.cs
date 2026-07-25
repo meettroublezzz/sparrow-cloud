@@ -73,9 +73,9 @@ namespace SparrowCloud.Host.Controllers
         {
             await _manager.ScanFilesAsync(UserId, storageId);
 
-            var storage = StorageManager.GetStorageService(UserId, storageId);
+            // var storage = StorageManager.GetStorageService(UserId, storageId);
 
-            await storage.TestAsync();
+            // await storage.TestAsync();
         }
     }
 }
