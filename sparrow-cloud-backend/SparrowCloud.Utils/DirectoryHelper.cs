@@ -27,7 +27,8 @@ namespace SparrowCloud.Utils
             var rootNode = new DirectoryTreeNode
             {
                 Label = rootDir.Name,
-                Key = rootDir.Name
+                Key = rootDir.Name,
+                Path = rootDir.FullName,
             };
 
             // 使用栈进行深度优先遍历（非递归）
@@ -51,7 +52,8 @@ namespace SparrowCloud.Utils
                         var childNode = new DirectoryTreeNode
                         {
                             Label = subDir.Name,
-                            Key = subDir.Name
+                            Key = subDir.Name,
+                            Path = subDir.FullName,
                         };
 
                         currentNode.Children.Add(childNode);
@@ -270,6 +272,11 @@ namespace SparrowCloud.Utils
         /// 目录实际名称
         /// </summary>
         public required string Key { get; set; }
+
+        /// <summary>
+        /// 完整路径
+        /// </summary>
+        public required string Path { get; set; }
 
         /// <summary>
         /// 子目录集合
