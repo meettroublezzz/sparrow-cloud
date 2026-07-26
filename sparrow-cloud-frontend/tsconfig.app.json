@@ -6,6 +6,9 @@
     "allowJs": true,
     "checkJs": false,
     "allowSyntheticDefaultImports": true,
+    "paths": {
+      "@/*": ["./src/*"]
+    },
     "types": ["vite/client"],
 
     /* Linting */
