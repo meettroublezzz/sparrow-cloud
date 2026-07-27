@@ -18,11 +18,27 @@ interface RequestResponse<T> {
 
 const apiBaseUrl = import.meta.env.VITE_API_BASE_URL ?? '/api'
 
+function resolveRequestUrl(url: string): string {
+  if (/^https?:\/\//i.test(url)) {
+    return url
+  }
+
+  const normalizedUrl = url.startsWith('/') ? url : `/${url}`
+  const normalizedBaseUrl = apiBaseUrl.replace(/\/$/, '')
+
+  if (!normalizedBaseUrl) {
+    return normalizedUrl
+  }
+
+  if (normalizedUrl === normalizedBaseUrl || normalizedUrl.startsWith(`${normalizedBaseUrl}/`)) {
+    return normalizedUrl
+  }
+
+  return `${normalizedBaseUrl}${normalizedUrl}`
+}
+
 function buildUrl(url: string, params?: RequestOptions['params']): string {
-  const baseUrl = apiBaseUrl.startsWith('http')
-    ? apiBaseUrl
-    : `${window.location.origin}${apiBaseUrl.startsWith('/') ? '' : '/'}${apiBaseUrl}`
-  const resolvedUrl = new URL(url, baseUrl.endsWith('/') ? baseUrl : `${baseUrl}/`)
+  const resolvedUrl = new URL(resolveRequestUrl(url), window.location.origin)
 
   if (params) {
     Object.entries(params as Record<string, string | number | boolean | undefined>).forEach(([key, value]) => {

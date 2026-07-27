@@ -1,11 +1,30 @@
-const BASE_URL = 'http://localhost:5064'
+const REQUEST_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? ''
 
 type RequestOptions = RequestInit & {
   query?: Record<string, string | number | boolean | null | undefined>
 }
 
+function normalizePath(path: string) {
+  if (/^https?:\/\//i.test(path)) {
+    return path
+  }
+
+  const normalizedPath = path.startsWith('/') ? path : `/${path}`
+  const normalizedBaseUrl = REQUEST_BASE_URL.replace(/\/$/, '')
+
+  if (!normalizedBaseUrl) {
+    return normalizedPath
+  }
+
+  if (normalizedPath === normalizedBaseUrl || normalizedPath.startsWith(`${normalizedBaseUrl}/`)) {
+    return normalizedPath
+  }
+
+  return `${normalizedBaseUrl}${normalizedPath}`
+}
+
 function buildUrl(path: string, query?: RequestOptions['query']) {
-  const url = new URL(path, BASE_URL)
+  const url = new URL(normalizePath(path), window.location.origin)
 
   if (query) {
     Object.entries(query).forEach(([key, value]) => {
